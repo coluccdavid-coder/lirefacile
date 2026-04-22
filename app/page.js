@@ -58,4 +58,21 @@ export default function Home() {
       >
         <h1
           style={{
+            fontSize: "72px",
+            fontWeight: "bold",
+            marginBottom: "10px",
+          }}
+        >
+          LireFacile
+        </h1>
+
+        <p
+          style={{
+            fontSize: "28px",
+            marginBottom: "30px",
+            opacity: 0.8,
+          }}
+        >
+          Simplifie un texte et écoute-le facilement.
+        </p>
 }
