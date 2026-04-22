@@ -20,37 +20,90 @@ export default function Home() {
     <main
       style={{
         minHeight: "100vh",
-        backgroundColor: darkMode ? "#111" : "#f5f5f5",
-        color: darkMode ? "#fff" : "#000",
-        padding: "40px",
+        background: darkMode
+          ? "linear-gradient(to bottom, #111, #222)"
+          : "linear-gradient(to bottom, #f5f7fa, #e4e8f0)",
+        color: darkMode ? "white" : "#111",
+        padding: "50px",
         fontFamily: "Arial",
+        transition: "0.3s",
       }}
     >
-      <h1 style={{ fontSize: "48px" }}>LireFacile</h1>
-
-      <p>Outil pour simplifier et lire un texte à voix haute.</p>
-
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Colle ton texte ici..."
+      <div
         style={{
-          width: "100%",
-          height: "200px",
-          padding: "15px",
-          fontSize: "18px",
-          marginTop: "20px",
-          borderRadius: "10px",
+          maxWidth: "900px",
+          margin: "auto",
+          background: darkMode ? "#1e1e1e" : "white",
+          borderRadius: "20px",
+          padding: "40px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
         }}
-      />
+      >
+        <h1
+          style={{
+            fontSize: "48px",
+            marginBottom: "10px",
+          }}
+        >
+          LireFacile
+        </h1>
 
-      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <button onClick={simplifyText}>Simplifier</button>
-        <button onClick={speakText}>Lire à voix haute</button>
-        <button onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? "Mode Clair" : "Mode Sombre"}
-        </button>
+        <p style={{ marginBottom: "30px", opacity: 0.8 }}>
+          Simplifie un texte et écoute-le facilement.
+        </p>
+
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Colle ton texte ici..."
+          style={{
+            width: "100%",
+            height: "220px",
+            padding: "20px",
+            borderRadius: "15px",
+            border: "none",
+            fontSize: "18px",
+            resize: "none",
+            outline: "none",
+            background: darkMode ? "#2c2c2c" : "#f3f4f6",
+            color: darkMode ? "white" : "black",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            gap: "15px",
+            marginTop: "25px",
+            flexWrap: "wrap",
+          }}
+        >
+          <button onClick={simplifyText} style={buttonStyle}>
+            Simplifier
+          </button>
+
+          <button onClick={speakText} style={buttonStyle}>
+            Lire à voix haute
+          </button>
+
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            style={buttonStyle}
+          >
+            {darkMode ? "Mode Clair" : "Mode Sombre"}
+          </button>
+        </div>
       </div>
     </main>
   );
 }
+
+const buttonStyle = {
+  padding: "12px 20px",
+  borderRadius: "12px",
+  border: "none",
+  cursor: "pointer",
+  background: "#2563eb",
+  color: "white",
+  fontSize: "16px",
+};
