@@ -1,20 +1,3 @@
-Voici les **2 scripts complets** :
-
-### 1. Installer le dictionnaire français
-
-Dans le terminal (Codespaces ou PC) :
-
-```bash
-npm install nspell dictionary-fr
-```
-
----
-
-### 2. Script complet `app/page.js`
-
-Remplace entièrement ton fichier `app/page.js` par ceci :
-
-```jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -163,4 +146,3 @@ export default function Home() {
     </main>
   );
 }
-```
