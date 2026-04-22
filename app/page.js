@@ -34,4 +34,34 @@ export default function Home() {
 
   const correctText = () => {
     if (!text.trim()) {
+      alert("Entre un texte d'abord");
+      return;
+    }
+
+    let corrected = text;
+
+    corrected = corrected
+      .replace(/ sa /gi, " ça ")
+      .replace(/ sest /gi, " c'est ")
+      .replace(/ j ai /gi, " j'ai ")
+      .replace(/ paske/gi, " parce que")
+      .replace(/ stp/gi, " s'il te plaît")
+      .replace(/ bjr/gi, " bonjour")
+      .replace(/ svp/gi, " s'il vous plaît");
+
+    setText(corrected);
+  };
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: darkMode
+          ? "linear-gradient(to bottom, #111, #222)"
+          : "linear-gradient(to bottom, #f1f5f9, #dbe2ea)",
+        padding: "40px",
+        fontFamily: "Arial, sans-serif",
 };
