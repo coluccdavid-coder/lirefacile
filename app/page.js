@@ -70,40 +70,13 @@ export default function Home() {
           }}
         />
 
+        <p style={{ marginTop: "10px", opacity: 0.7 }}>
+          Nombre de caractères : {text.length}
+        </p>
+
         <div
           style={{
             display: "flex",
             gap: "15px",
             marginTop: "25px",
-            flexWrap: "wrap",
-          }}
-        >
-          <button onClick={simplifyText} style={buttonStyle}>
-            Simplifier
-          </button>
-
-          <button onClick={speakText} style={buttonStyle}>
-            Lire à voix haute
-          </button>
-
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            style={buttonStyle}
-          >
-            {darkMode ? "Mode Clair" : "Mode Sombre"}
-          </button>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-const buttonStyle = {
-  padding: "12px 20px",
-  borderRadius: "12px",
-  border: "none",
-  cursor: "pointer",
-  background: "#2563eb",
-  color: "white",
-  fontSize: "16px",
 };
