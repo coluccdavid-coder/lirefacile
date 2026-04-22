@@ -1,75 +1,72 @@
 "use client";
-            resize: "none",
-            backgroundColor: darkMode ? "#374151" : "#e5e7eb",
-            color: darkMode ? "white" : "black",
-            outline: "none",
-            fontFamily: dyslexicMode
-              ? "OpenDyslexic, Arial, sans-serif"
-              : "Arial, sans-serif"
-          }}
-        />
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "15px",
-            marginTop: "30px"
-          }}
-        >
-          <button onClick={simplifyText} style={buttonStyle}>
-            Simplifier
-          </button>
+import { useState } from "react";
 
-          <button onClick={aiCorrection} style={buttonStyle}>
-            IA Correction
-          </button>
+export default function Home() {
+  const [text, setText] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+  const [dyslexicMode, setDyslexicMode] = useState(false);
 
-          <button onClick={speakText} style={buttonStyle}>
-            Lire
-          </button>
+  const simplifyText = () => {
+    if (!text.trim()) return;
 
-          <button onClick={stopSpeech} style={buttonStyle}>
-            Stop
-          </button>
+    let simplified = text
+      .replace(/bonjours/gi, "bonjour")
+      .replace(/pou/gi, "pour")
+      .replace(/mieu/gi, "mieux")
+      .replace(/sa va/gi, "ça va")
+      .replace(/j espere/gi, "j’espère")
+      .replace(/tt/gi, "tout")
+      .replace(/svp/gi, "s’il vous plaît");
 
-          <button onClick={copyText} style={buttonStyle}>
-            Copier
-          </button>
+    setText(simplified);
+  };
 
-          <button onClick={clearText} style={buttonStyle}>
-            Effacer
-          </button>
+  const speakText = () => {
+    if (!text.trim()) return;
 
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            style={buttonStyle}
-          >
-            {darkMode ? "Mode Clair" : "Mode Sombre"}
-          </button>
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "fr-FR";
+    speech.rate = 0.9;
+    speech.pitch = 1;
 
-          <button
-            onClick={() => setDyslexicMode(!dyslexicMode)}
-            style={buttonStyle}
-          >
-            Dyslexie
-          </button>
+    window.speechSynthesis.speak(speech);
+  };
 
-          <button
-            onClick={() => setFontSize(fontSize + 2)}
-            style={buttonStyle}
-          >
-            A+
-          </button>
+  const stopSpeech = () => {
+    window.speechSynthesis.cancel();
+  };
 
-          <button
-            onClick={() => setFontSize(fontSize - 2)}
-            style={buttonStyle}
-          >
-            A-
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Texte copié ✅");
+    } catch {
+      alert("Impossible de copier");
+    }
+  };
+
+  const aiCorrection = () => {
+    if (!text.trim()) return;
+
+    let corrected = text;
+
+    const corrections = {
+      bonjours: "bonjour",
+      pou: "pour",
+      mieu: "mieux",
+      sa: "ça",
+      jsuis: "je suis",
+      c: "c’est",
+      jespere: "j’espère",
+      tt: "tout",
+      bokou: "beaucoup",
+      tro: "trop",
+      stp: "s’il te plaît",
+      svp: "s’il vous plaît",
+      pk: "pourquoi",
+      koi: "quoi",
+      koman: "comment",
+      bjr: "bonjour",
+    };
 }
