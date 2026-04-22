@@ -1,11 +1,39 @@
+Voici les **2 scripts complets** :
+
+### 1. Installer le dictionnaire français
+
+Dans le terminal (Codespaces ou PC) :
+
+```bash
+npm install nspell dictionary-fr
+```
+
+---
+
+### 2. Script complet `app/page.js`
+
+Remplace entièrement ton fichier `app/page.js` par ceci :
+
+```jsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import nspell from "nspell";
+import dictionary from "dictionary-fr";
 
 export default function Home() {
+  const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
-  const [text, setText] = useState("");
+  const [spell, setSpell] = useState(null);
+
+  useEffect(() => {
+    dictionary((err, dict) => {
+      if (!err) {
+        setSpell(nspell(dict));
+      }
+    });
+  }, []);
 
   const speakText = () => {
     const speech = new SpeechSynthesisUtterance(text);
@@ -19,17 +47,31 @@ export default function Home() {
 
   const copyText = () => {
     navigator.clipboard.writeText(text);
-    alert("Texte copié !");
+    alert("Texte copié");
   };
 
   const aiCorrection = () => {
-    let corrected = text
-      .replace(/bonjours/gi, "bonjour")
-      .replace(/sa va/gi, "ça va")
-      .replace(/pou/gi, "pour")
-      .replace(/j espere/gi, "j’espère");
+    if (!spell || !text.trim()) return;
 
-    setText(corrected);
+    const words = text.split(" ");
+
+    const corrected = words.map((word) => {
+      const cleanWord = word.replace(/[.,!?]/g, "");
+
+      if (spell.correct(cleanWord)) {
+        return word;
+      }
+
+      const suggestions = spell.suggest(cleanWord);
+
+      if (suggestions.length > 0) {
+        return suggestions[0];
+      }
+
+      return word;
+    });
+
+    setText(corrected.join(" "));
   };
 
   return (
@@ -50,13 +92,12 @@ export default function Home() {
           borderRadius: "30px",
           width: "100%",
           maxWidth: "1000px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
         }}
       >
         <h1
           style={{
             fontSize: "64px",
-            fontWeight: "bold",
             marginBottom: "10px",
             color: darkMode ? "white" : "black",
           }}
@@ -66,8 +107,8 @@ export default function Home() {
 
         <p
           style={{
-            fontSize: "28px",
-            marginBottom: "30px",
+            fontSize: "24px",
+            marginBottom: "25px",
             color: darkMode ? "#d1d5db" : "#374151",
           }}
         >
@@ -87,7 +128,7 @@ export default function Home() {
             border: "none",
             background: darkMode ? "#374151" : "#e5e7eb",
             fontSize: dyslexicMode ? "28px" : "24px",
-            fontFamily: dyslexicMode ? "OpenDyslexic" : "Arial",
+            fontFamily: dyslexicMode ? "OpenDyslexic, Arial" : "Arial",
             color: darkMode ? "white" : "black",
             resize: "none",
             outline: "none",
@@ -102,9 +143,12 @@ export default function Home() {
             marginTop: "25px",
           }}
         >
-          <button onClick={aiCorrection}>IA</button>
+          <button onClick={aiCorrection}>IA Correction</button>
+
           <button onClick={speakText}>Lire</button>
+
           <button onClick={stopSpeech}>Stop</button>
+
           <button onClick={copyText}>Copier</button>
 
           <button onClick={() => setDarkMode(!darkMode)}>
@@ -112,10 +156,11 @@ export default function Home() {
           </button>
 
           <button onClick={() => setDyslexicMode(!dyslexicMode)}>
-            Mode Dyslexie
+            Dyslexie
           </button>
         </div>
       </div>
     </main>
   );
 }
+```
