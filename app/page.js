@@ -1,4 +1,75 @@
 "use client";
+            backgroundColor: darkMode ? "#374151" : "#e5e7eb",
+            color: darkMode ? "white" : "black",
+            fontFamily: dyslexicMode
+              ? "OpenDyslexic, Arial, sans-serif"
+              : "Arial, sans-serif",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
+            marginTop: "20px",
+          }}
+        >
+          <button onClick={dictionaryCorrection} style={buttonStyle}>
+            Dictionnaire FR
+          </button>
+
+          <button onClick={simplifyText} style={buttonStyle}>
+            Simplifier
+          </button>
+
+          <button onClick={speakText} style={buttonStyle}>
+            Lire
+          </button>
+
+          <button onClick={stopSpeech} style={buttonStyle}>
+            Stop
+          </button>
+
+          <button onClick={copyText} style={buttonStyle}>
+            Copier
+          </button>
+
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            style={buttonStyle}
+          >
+            {darkMode ? "Mode Clair" : "Mode Sombre"}
+          </button>
+
+          <button
+            onClick={() => setDyslexicMode(!dyslexicMode)}
+            style={buttonStyle}
+          >
+            Dyslexie
+          </button>
+        </div>
+
+        {suggestions.length > 0 && (
+          <div style={{ marginTop: "25px" }}>
+            <h3 style={{ color: darkMode ? "white" : "black" }}>
+              Suggestions
+            </h3>
+
+            {suggestions.map((item, index) => (
+              <p
+                key={index}
+                style={{ color: darkMode ? "#ddd" : "#333" }}
+              >
+                {item.original} → {item.suggestion}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}"use client";
 import { useState } from "react";
 export default function Home() {
   const [text, setText] = useState("");
