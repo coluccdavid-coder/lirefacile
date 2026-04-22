@@ -5,6 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+  const [correction, setCorrection] = useState("");
 
   const simplifyText = () => {
     if (!text.trim()) {
@@ -32,6 +33,5 @@ export default function Home() {
     window.speechSynthesis.speak(speech);
   };
 
-  return (
-    <main
+  const correctText = () => {
 }
