@@ -1,75 +1,56 @@
-'use client'
+"use client";
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            marginBottom: '30px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            onClick={simplifyText}
-            style={{
-              padding: '12px 25px',
-              borderRadius: '10px',
-              border: 'none',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '18px',
-            }}
-          >
-            Simplifier le texte
-          </button>
+import { useState } from "react";
 
-          <button
-            onClick={speakText}
-            style={{
-              padding: '12px 25px',
-              borderRadius: '10px',
-              border: 'none',
-              backgroundColor: '#16a34a',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '18px',
-            }}
-          >
-            Lire à voix haute
-          </button>
-        </div>
+export default function Home() {
+  const [text, setText] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
 
-        {easyText && (
-          <div
-            style={{
-              backgroundColor: darkMode ? '#1f1f1f' : 'white',
-              padding: '30px',
-              borderRadius: '20px',
-              boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-            }}
-          >
-            <h2
-              style={{
-                marginBottom: '20px',
-                fontSize: '28px',
-              }}
-            >
-              Texte simplifié
-            </h2>
+  const simplifyText = () => {
+    setText(text.toLowerCase());
+  };
 
-            <p
-              style={{
-                whiteSpace: 'pre-line',
-                fontSize: '24px',
-                lineHeight: '2.2',
-                letterSpacing: '1px',
-              }}
-            >
-              {easyText}
-            </p>
-          </div>
-        )}
+  const speakText = () => {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "fr-FR";
+    window.speechSynthesis.speak(speech);
+  };
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: darkMode ? "#111" : "#f5f5f5",
+        color: darkMode ? "#fff" : "#000",
+        padding: "40px",
+        fontFamily: "Arial",
+      }}
+    >
+      <h1 style={{ fontSize: "48px" }}>LireFacile</h1>
+
+      <p>Outil pour simplifier et lire un texte à voix haute.</p>
+
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Colle ton texte ici..."
+        style={{
+          width: "100%",
+          height: "200px",
+          padding: "15px",
+          fontSize: "18px",
+          marginTop: "20px",
+          borderRadius: "10px",
+        }}
+      />
+
+      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+        <button onClick={simplifyText}>Simplifier</button>
+        <button onClick={speakText}>Lire à voix haute</button>
+        <button onClick={() => setDarkMode(!darkMode)}>
+          {darkMode ? "Mode Clair" : "Mode Sombre"}
+        </button>
       </div>
     </main>
-  )
+  );
 }
