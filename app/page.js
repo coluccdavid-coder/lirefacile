@@ -1,6 +1,5 @@
 "use client";
-          </button>
-
+         
           <button onClick={aiCorrection} style={buttonStyle}>
             IA Correction
           </button>
