@@ -1,15 +1,11 @@
 "use client";
-
 import { useState } from "react";
-
 export default function Home() {
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
-
 const simplifyText = () => {
     if (!text.trim()) return;
-
 let simplified = text
       .replace(/bonjours/gi, "bonjour")
       .replace(/pou/gi, "pour")
@@ -21,22 +17,17 @@ let simplified = text
 
 setText(simplified);
   };
-
 const speakText = () => {
     if (!text.trim()) return;
-
 const speech = new SpeechSynthesisUtterance(text);
     speech.lang = "fr-FR";
     speech.rate = 0.9;
     speech.pitch = 1;
-
 window.speechSynthesis.speak(speech);
   };
-
 const stopSpeech = () => {
     window.speechSynthesis.cancel();
   };
-
 const copyText = async () => {
     try {
       await navigator.clipboard.writeText(text);
@@ -45,12 +36,9 @@ const copyText = async () => {
       alert("Impossible de copier");
     }
   };
-
 const aiCorrection = () => {
     if (!text.trim()) return;
-
 let corrected = text;
-
 const corrections = {
       bonjours: "bonjour",
       pou: "pour",
@@ -118,6 +106,7 @@ const buttonStyle = {
     fontSize: "16px",
     fontWeight: "bold",
   };
+
 return (
     <div style={containerStyle}>
       <div style={cardStyle}>
