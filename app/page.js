@@ -4,8 +4,26 @@ export default function Home() {
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
-const dictionaryCorrection = () => {
-    if (!spell || !text.trim()) return;
+const dictionaryCorrection = async () => {
+  if (!text.trim()) return;
+  try {
+    const response = await fetch("/api/spell", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    const data = await response.json();
+
+    if (data.correctedText) {
+      setText(data.correctedText);
+    }
+  } catch (error) {
+    console.error("Erreur dictionnaire :", error);
+  }
+};
 const words = text.split(" ");
     const correctedWords = [];
     const detectedSuggestions = [];
