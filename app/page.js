@@ -1,20 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import nspell from "nspell";
-import dictionary from "dictionary-fr";
 export default function Home() {
   const [text, setText] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
-  const [spell, setSpell] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-useEffect(() => {
-    dictionary((err, dict) => {
-      if (!err) {
-        setSpell(nspell(dict));
-      }
-    });
-  }, []);
 const dictionaryCorrection = () => {
     if (!spell || !text.trim()) return;
 const words = text.split(" ");
