@@ -1,58 +1,50 @@
 import { NextResponse } from "next/server";
-import nspell from "nspell";
-import dictionary from "dictionary-fr";
-
-let spellChecker = null;
-
-async function initSpellChecker() {
-  if (spellChecker) return spellChecker;
-
-  return new Promise((resolve, reject) => {
-    dictionary((err, dict) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      spellChecker = nspell(dict);
-      resolve(spellChecker);
-    });
-  });
-}
 
 export async function POST(req) {
   try {
     const { text } = await req.json();
 
-    const spell = await initSpellChecker();
+    const response = await fetch("https://api.languagetool.org/v2/check", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        text,
+        language: "fr",
+      }),
+    });
 
-    const correctedText = text
-      .split(" ")
-      .map((word) => {
-        const cleanWord = word
-          .toLowerCase()
-          .replace(/[^a-zàâçéèêëîïôûùüÿñæœ'-]/gi, "");
+    const data = await response.json();
 
-        if (!cleanWord) return word;
+    let correctedText = text;
 
-        if (!spell.correct(cleanWord)) {
-          const suggestions = spell.suggest(cleanWord);
+    if (data.matches && data.matches.length > 0) {
+      let offsetCorrection = 0;
 
-          if (suggestions.length > 0) {
-            return suggestions[0];
-          }
+      data.matches.forEach((match) => {
+        if (match.replacements.length > 0) {
+          const replacement = match.replacements[0].value;
+
+          const start = match.offset + offsetCorrection;
+          const end = start + match.length;
+
+          correctedText =
+            correctedText.slice(0, start) +
+            replacement +
+            correctedText.slice(end);
+
+          offsetCorrection += replacement.length - match.length;
         }
-
-        return word;
-      })
-      .join(" ");
+      });
+    }
 
     return NextResponse.json({ correctedText });
   } catch (error) {
-    console.error("Erreur API:", error);
+    console.error(error);
 
     return NextResponse.json(
-      { error: "Erreur serveur" },
+      { error: "Erreur correction" },
       { status: 500 }
     );
   }
