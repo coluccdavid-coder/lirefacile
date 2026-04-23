@@ -1,46 +1,52 @@
 import { NextResponse } from "next/server";
+import nspell from "nspell";
+import dictionary from "dictionary-fr";
+
+let spell = null;
+
+async function loadDictionary() {
+  if (spell) return spell;
+
+  const dict = await dictionary;
+  spell = nspell(dict);
+
+  return spell;
+}
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const text = body.text;
+    const { text } = await req.json();
 
-    const corrections = {
-      bonjou: "bonjour",
-      bonjouu: "bonjour",
-      bonjouur: "bonjour",
-      bonjouuur: "bonjour",
-      bonjourr: "bonjour",
-      bonjou: "bonjour",
-      commen: "comment",
-      comen: "comment",
-      coment: "comment",
-      aujoudi: "aujourd'hui",
-      aujourdui: "aujourd'hui",
-      ajourdhui: "aujourd'hui",
-      mercie: "merci",
-      ordiateur: "ordinateur",
-      ecolee: "école",
-      maisonn: "maison",
-      dificulté: "difficulté",
-      coriger: "corriger",
-      problemme: "problème",
-      aplication: "application",
-      developpement: "développement"
-    };
+    const spellChecker = await loadDictionary();
 
-    const correctedText = text
-      .split(" ")
-      .map((word) => {
-        const lower = word.toLowerCase();
-        return corrections[lower] || word;
-      })
-      .join(" ");
+    const words = text.split(" ");
 
-    return NextResponse.json({ correctedText });
+    const correctedWords = words.map((word) => {
+      const cleanWord = word
+        .toLowerCase()
+        .replace(/[^a-zàâçéèêëîïôûùüÿñæœ'-]/gi, "");
+
+      if (!cleanWord) return word;
+
+      if (!spellChecker.correct(cleanWord)) {
+        const suggestions = spellChecker.suggest(cleanWord);
+
+        if (suggestions.length > 0) {
+          return suggestions[0];
+        }
+      }
+
+      return word;
+    });
+
+    return NextResponse.json({
+      correctedText: correctedWords.join(" "),
+    });
   } catch (error) {
+    console.error(error);
+
     return NextResponse.json(
-      { error: "Erreur correction" },
+      { error: "Erreur correcteur" },
       { status: 500 }
     );
   }
