@@ -4,6 +4,8 @@ import { useState } from "react";
 
 export default function Home() {
   const [text, setText] = useState("");
+  const [correctedText, setCorrectedText] = useState("");
+  const [explanations, setExplanations] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,8 @@ try {
 const data = await response.json();
 
 if (data.correctedText) {
-        setText(data.correctedText);
+        setCorrectedText(data.correctedText);
+        setExplanations(data.explanations || []);
       }
     } catch (error) {
       console.error("Erreur correcteur :", error);
@@ -35,7 +38,7 @@ setLoading(false);
   };
 
 const speakText = () => {
-    const speech = new SpeechSynthesisUtterance(text);
+    const speech = new SpeechSynthesisUtterance(correctedText || text);
     speech.lang = "fr-FR";
     speech.rate = 0.9;
     window.speechSynthesis.speak(speech);
@@ -128,10 +131,7 @@ return (
             {loading ? "Correction..." : "Correction Orthographique"}
           </button>
 
-<button
-            onClick={speakText}
-            style={buttonStyle}
-          >
+<button onClick={speakText} style={buttonStyle}>
             Lecture Audio
           </button>
         </div>
@@ -142,7 +142,44 @@ return (
           placeholder="Colle ton texte ici..."
           style={textareaStyle}
         />
+
+{correctedText && (
+          <div
+            style={{
+              marginTop: "30px",
+              padding: "20px",
+              borderRadius: "18px",
+              backgroundColor: darkMode ? "#111827" : "#f3f4f6",
+              color: darkMode ? "white" : "black",
+            }}
+          >
+            <h2>Avant correction</h2>
+            <p>{text}</p>
+
+<h2 style={{ marginTop: "20px" }}>Après correction</h2>
+            <p>{correctedText}</p>
+
+{explanations.length > 0 && (
+              <>
+                <h2 style={{ marginTop: "20px" }}>Explications</h2>
+
+<ul>
+                  {explanations.map((item, index) => (
+                    <li key={index} style={{ marginBottom: "10px" }}>
+                      <strong>{item.original}</strong> → {item.corrected}
+                      <br />
+                      <span style={{ opacity: 0.8 }}>
+                        {item.reason}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
