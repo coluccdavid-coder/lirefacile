@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import nspell from "nspell";
-import fr from "dictionary-fr";
+import dictionary from "dictionary-fr";
 
-let spell = null;
+let spellInstance = null;
 
-async function getSpell() {
-  if (spell) return spell;
+async function loadSpell() {
+  if (spellInstance) return spellInstance;
 
   return new Promise((resolve, reject) => {
-    fr((err, dict) => {
+    dictionary((err, dict) => {
       if (err) {
         reject(err);
         return;
       }
 
-      spell = nspell(dict);
-      resolve(spell);
+      spellInstance = nspell(dict);
+      resolve(spellInstance);
     });
   });
 }
@@ -24,33 +24,32 @@ export async function POST(req) {
   try {
     const { text } = await req.json();
 
-    const spellChecker = await getSpell();
+    const spell = await loadSpell();
 
-    const words = text.split(" ");
+    const correctedText = text
+      .split(" ")
+      .map((word) => {
+        const cleaned = word
+          .toLowerCase()
+          .replace(/[^a-zàâçéèêëîïôûùüÿñæœ'-]/gi, "");
 
-    const correctedWords = words.map((word) => {
-      const cleanWord = word
-        .toLowerCase()
-        .replace(/[^a-zàâçéèêëîïôûùüÿñæœ'-]/gi, "");
+        if (!cleaned) return word;
 
-      if (!cleanWord) return word;
+        if (!spell.correct(cleaned)) {
+          const suggestions = spell.suggest(cleaned);
 
-      if (!spellChecker.correct(cleanWord)) {
-        const suggestions = spellChecker.suggest(cleanWord);
-
-        if (suggestions.length > 0) {
-          return suggestions[0];
+          if (suggestions.length > 0) {
+            return suggestions[0];
+          }
         }
-      }
 
-      return word;
-    });
+        return word;
+      })
+      .join(" ");
 
-    return NextResponse.json({
-      correctedText: correctedWords.join(" "),
-    });
+    return NextResponse.json({ correctedText });
   } catch (error) {
-    console.error("Erreur API spell:", error);
+    console.error(error);
 
     return NextResponse.json(
       { error: "Erreur correction" },
