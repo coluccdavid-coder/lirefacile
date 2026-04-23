@@ -1,134 +1,129 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import jsPDF from "jspdf";
+import { useState, useRef } from "react";
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [originalText, setOriginalText] = useState("");
   const [correctedText, setCorrectedText] = useState("");
-  const [explanations, setExplanations] = useState([]);
-  const [teacherAdvice, setTeacherAdvice] = useState("");
-  const [simplifiedText, setSimplifiedText] = useState("");
-  const [profMode, setProfMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [dyslexicMode, setDyslexicMode] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [dyslexiaFont, setDyslexiaFont] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState(1);
-  const [readability, setReadability] = useState("");
 
-  useEffect(() => {
-    const saved = localStorage.getItem("lirefacile_text");
-    if (saved) setText(saved);
-  }, []);
+  const utteranceRef = useRef(null);
 
-  useEffect(() => {
-    localStorage.setItem("lirefacile_text", text);
-  }, [text]);
-
-  const calculateReadability = (content) => {
-    const words = content.split(" ").filter(Boolean);
-    const sentences = content.split(/[.!?]/).filter(Boolean);
-    const avg = sentences.length ? words.length / sentences.length : 0;
-
-    if (avg < 10) return "Très facile";
-    if (avg < 15) return "Facile";
-    if (avg < 20) return "Moyen";
-    return "Difficile";
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
   };
 
-  const dictionaryCorrection = async () => {
-    if (!text.trim()) return;
+  const toggleDyslexiaFont = () => {
+    setDyslexiaFont(!dyslexiaFont);
+  };
 
-    setLoading(true);
-
+  const correctTextAI = async () => {
     try {
-      const response = await fetch("/api/spell", {
+      const res = await fetch("/api/spell", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text,
+        }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      setOriginalText(text);
-      setCorrectedText(data.correctedText || "");
-      setText(data.correctedText || text);
-      setExplanations(data.explanations || []);
-      setTeacherAdvice(data.teacherAdvice || "");
-      setSimplifiedText(data.simplifiedText || "");
-      setReadability(calculateReadability(data.correctedText || text));
+      if (data.correctedText) {
+        setCorrectedText(data.correctedText);
+      }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
-
-    setLoading(false);
   };
 
   const speakText = () => {
-    const speech = new SpeechSynthesisUtterance(correctedText || text);
-    speech.lang = "fr-FR";
-    speech.rate = speechRate;
+    if (!text) return;
 
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "fr-FR";
+    utterance.rate = speechRate;
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
   };
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("LireFacile", 10, 10);
-    doc.text(correctedText || text, 10, 30);
-    doc.save("LireFacile.pdf");
+  const pauseSpeech = () => {
+    window.speechSynthesis.pause();
   };
 
-  const commonTextStyle = {
-    fontFamily: dyslexicMode
-      ? "OpenDyslexic, Arial, sans-serif"
-      : "Arial, sans-serif",
-    lineHeight: dyslexicMode ? "2" : "1.6",
-    letterSpacing: dyslexicMode ? "1px" : "normal",
+  const resumeSpeech = () => {
+    window.speechSynthesis.resume();
+  };
+
+  const stopSpeech = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const containerStyle = {
+    minHeight: "100vh",
+    backgroundColor: darkMode ? "#111" : "#e5e5e5",
     color: darkMode ? "white" : "black",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "40px",
+  };
+
+  const cardStyle = {
+    width: "100%",
+    maxWidth: "1200px",
+    backgroundColor: darkMode ? "#1e1e1e" : "#f0f0f0",
+    borderRadius: "30px",
+    padding: "40px",
   };
 
   const buttonStyle = {
+    backgroundColor: "#3b82f6",
     border: "none",
-    borderRadius: "12px",
-    padding: "12px 18px",
-    cursor: "pointer",
-    backgroundColor: darkMode ? "#2563eb" : "#3b82f6",
     color: "white",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontSize: "16px",
     fontWeight: "bold",
   };
 
+  const textAreaStyle = {
+    width: "100%",
+    minHeight: "220px",
+    borderRadius: "20px",
+    border: "none",
+    padding: "25px",
+    fontSize: "36px",
+    backgroundColor: darkMode ? "#2a2a2a" : "#d1d5db",
+    color: darkMode ? "white" : "black",
+    resize: "none",
+    outline: "none",
+    fontFamily: dyslexiaFont ? "OpenDyslexic, Arial" : "Arial",
+  };
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: darkMode ? "#111827" : "#f3f4f6",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "30px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1100px",
-          padding: "40px",
-          borderRadius: "24px",
-          backgroundColor: darkMode ? "#1f2937" : "white",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-        }}
-      >
+    <div style={containerStyle}>
+      <div style={cardStyle}>
         <h1
           style={{
-            ...commonTextStyle,
             textAlign: "center",
-            fontSize: "52px",
-            marginBottom: "25px",
+            fontSize: "64px",
+            marginBottom: "40px",
           }}
         >
           LireFacile
@@ -138,56 +133,59 @@ export default function Home() {
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "10px",
-            marginBottom: "20px",
+            gap: "12px",
+            marginBottom: "25px",
           }}
         >
-          <button style={buttonStyle} onClick={() => setDarkMode(!darkMode)}>
-            {darkMode ? "Mode Clair" : "Mode Sombre"}
+          <button style={buttonStyle} onClick={toggleDarkMode}>
+            Mode Sombre
           </button>
 
-          <button style={buttonStyle} onClick={() => setDyslexicMode(!dyslexicMode)}>
+          <button style={buttonStyle} onClick={toggleDyslexiaFont}>
             Police Dyslexie
           </button>
 
-          <button style={buttonStyle} onClick={() => setProfMode(!profMode)}>
-            {profMode ? "Mode Normal" : "Prof de Français"}
-          </button>
-
-          <button style={buttonStyle} onClick={dictionaryCorrection}>
-            {loading ? "Correction..." : "Corriger"}
+          <button style={buttonStyle} onClick={correctTextAI}>
+            Correction IA
           </button>
 
           <button style={buttonStyle} onClick={speakText}>
             Lecture
           </button>
 
-          <button style={buttonStyle} onClick={exportPDF}>
-            PDF
+          <button style={buttonStyle} onClick={pauseSpeech}>
+            Pause
+          </button>
+
+          <button style={buttonStyle} onClick={resumeSpeech}>
+            Reprendre
+          </button>
+
+          <button style={buttonStyle} onClick={stopSpeech}>
+            Stop
           </button>
         </div>
 
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Colle ton texte ici..."
-          style={{
-            width: "100%",
-            height: "240px",
-            borderRadius: "18px",
-            padding: "20px",
-            border: "none",
-            resize: "none",
-            outline: "none",
-            fontSize: "22px",
-            backgroundColor: darkMode ? "#374151" : "#e5e7eb",
-            ...commonTextStyle,
-          }}
+          placeholder="Écris ton texte ici"
+          style={textAreaStyle}
         />
 
-        <div style={{ marginTop: "20px" }}>
-          <label style={commonTextStyle}>
-            Vitesse lecture : {speechRate}x
+        <div
+          style={{
+            marginTop: "20px",
+            marginBottom: "40px",
+          }}
+        >
+          <label
+            style={{
+              fontSize: "22px",
+              fontWeight: "bold",
+            }}
+          >
+            Vitesse lecture : {speechRate.toFixed(1)}x
           </label>
 
           <input
@@ -197,6 +195,10 @@ export default function Home() {
             step="0.1"
             value={speechRate}
             onChange={(e) => setSpeechRate(Number(e.target.value))}
+            style={{
+              width: "220px",
+              marginLeft: "20px",
+            }}
           />
         </div>
 
@@ -204,57 +206,23 @@ export default function Home() {
           <div
             style={{
               marginTop: "30px",
-              padding: "25px",
+              backgroundColor: darkMode ? "#2a2a2a" : "#d1d5db",
+              padding: "30px",
               borderRadius: "20px",
-              backgroundColor: darkMode ? "#374151" : "#e5e7eb",
-              ...commonTextStyle,
             }}
           >
-            <h2>Avant correction</h2>
-            <p>{originalText}</p>
+            <h2 style={{ marginBottom: "20px" }}>Texte corrigé</h2>
 
-            <h2>Après correction</h2>
-            <p>{correctedText}</p>
-
-            <h2>Lisibilité</h2>
-            <p>{readability}</p>
-
-            {explanations.length > 0 && (
-              <>
-                <h2>Explications</h2>
-                <ul>
-                  {explanations.map((item, index) => (
-                    <li key={index}>
-                      <strong>{item.original}</strong> → {item.corrected}
-                      <br />
-                      {item.explanation || item.reason}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-        )}
-
-        {profMode && correctedText && (
-          <div
-            style={{
-              marginTop: "30px",
-              padding: "25px",
-              borderRadius: "20px",
-              backgroundColor: darkMode ? "#1e3a8a" : "#dbeafe",
-              ...commonTextStyle,
-            }}
-          >
-            <h2>Prof de Français</h2>
-            <h3>Conseil pédagogique</h3>
-            <p>{teacherAdvice}</p>
-            <h3>Version simplifiée</h3>
-            <p>{simplifiedText}</p>
+            <p
+              style={{
+                fontSize: "28px",
+                lineHeight: "1.8",
+                fontFamily: dyslexiaFont ? "OpenDyslexic, Arial" : "Arial",
+              }}
+            >
+              {correctedText}
+            </p>
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
