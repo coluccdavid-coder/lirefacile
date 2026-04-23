@@ -18,6 +18,7 @@ export async function POST(req) {
     const data = await response.json();
 
     let correctedText = text;
+    const explanations = [];
 
     if (data.matches && data.matches.length > 0) {
       let offsetCorrection = 0;
@@ -29,17 +30,28 @@ export async function POST(req) {
           const start = match.offset + offsetCorrection;
           const end = start + match.length;
 
+          const originalWord = correctedText.slice(start, end);
+
           correctedText =
             correctedText.slice(0, start) +
             replacement +
             correctedText.slice(end);
+
+          explanations.push({
+            original: originalWord,
+            corrected: replacement,
+            reason: match.message,
+          });
 
           offsetCorrection += replacement.length - match.length;
         }
       });
     }
 
-    return NextResponse.json({ correctedText });
+    return NextResponse.json({
+      correctedText,
+      explanations,
+    });
   } catch (error) {
     console.error(error);
 
