@@ -223,6 +223,9 @@ export default function Home() {
               {correctedText}
             </p>
           </div>
-        )}
+    )}
       </div>
+    </div>
+  );
+}
 
