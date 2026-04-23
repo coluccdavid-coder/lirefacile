@@ -31,3 +31,4 @@ Tu expliques simplement les corrections.
     correctedText: corrected,
   });
 }
+
