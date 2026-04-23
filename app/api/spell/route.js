@@ -4,13 +4,17 @@ import dictionary from "dictionary-fr";
 
 let spell = null;
 
-async function loadDictionary() {
-  if (spell) return spell;
+function loadDictionary() {
+  return new Promise((resolve, reject) => {
+    if (spell) return resolve(spell);
 
-  const dict = await dictionary;
-  spell = nspell(dict);
+    dictionary((err, dict) => {
+      if (err) return reject(err);
 
-  return spell;
+      spell = nspell(dict);
+      resolve(spell);
+    });
+  });
 }
 
 export async function POST(req) {
