@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 import nspell from "nspell";
-import dictionary from "dictionary-fr";
+import fr from "dictionary-fr";
 
 let spell = null;
 
-function loadDictionary() {
-  return new Promise((resolve, reject) => {
-    if (spell) return resolve(spell);
+async function getSpell() {
+  if (spell) return spell;
 
-    dictionary((err, dict) => {
-      if (err) return reject(err);
+  return new Promise((resolve, reject) => {
+    fr((err, dict) => {
+      if (err) {
+        reject(err);
+        return;
+      }
 
       spell = nspell(dict);
       resolve(spell);
@@ -21,7 +24,7 @@ export async function POST(req) {
   try {
     const { text } = await req.json();
 
-    const spellChecker = await loadDictionary();
+    const spellChecker = await getSpell();
 
     const words = text.split(" ");
 
@@ -47,10 +50,10 @@ export async function POST(req) {
       correctedText: correctedWords.join(" "),
     });
   } catch (error) {
-    console.error(error);
+    console.error("Erreur API spell:", error);
 
     return NextResponse.json(
-      { error: "Erreur correcteur" },
+      { error: "Erreur correction" },
       { status: 500 }
     );
   }
