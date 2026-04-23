@@ -144,14 +144,19 @@ return (
         />
 
 {correctedText && (
-          <div
-            style={{
-              marginTop: "30px",
-              padding: "20px",
-              borderRadius: "18px",
-              backgroundColor: darkMode ? "#111827" : "#f3f4f6",
-              color: darkMode ? "white" : "black",
-            }}
+  <div
+    style={{
+      marginTop: "30px",
+      padding: "25px",
+      borderRadius: "20px",
+      backgroundColor: darkMode ? "#374151" : "#e5e7eb",
+      color: darkMode ? "white" : "black",
+      fontFamily: dyslexicMode
+        ? "OpenDyslexic, Arial, sans-serif"
+        : "Arial, sans-serif",
+      lineHeight: "1.8",
+      letterSpacing: dyslexicMode ? "1px" : "normal",
+    }}
           >
             <h2>Avant correction</h2>
             <p>{text}</p>
