@@ -1,3 +1,6 @@
+# page.js
+
+```jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,16 +11,14 @@ export default function Home() {
   const [originalText, setOriginalText] = useState("");
   const [correctedText, setCorrectedText] = useState("");
   const [explanations, setExplanations] = useState([]);
-
+  const [teacherAdvice, setTeacherAdvice] = useState("");
+  const [simplifiedText, setSimplifiedText] = useState("");
+  const [profMode, setProfMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [dyslexicMode, setDyslexicMode] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [speechRate, setSpeechRate] = useState(1);
   const [readability, setReadability] = useState("");
-  const [complexSentences, setComplexSentences] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [syllables, setSyllables] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("lirefacile_text");
@@ -31,23 +32,12 @@ export default function Home() {
   const calculateReadability = (content) => {
     const words = content.split(" ").filter(Boolean);
     const sentences = content.split(/[.!?]/).filter(Boolean);
-
     const avg = sentences.length ? words.length / sentences.length : 0;
 
     if (avg < 10) return "Très facile";
     if (avg < 15) return "Facile";
     if (avg < 20) return "Moyen";
     return "Difficile";
-  };
-
-  const detectComplexSentences = (content) => {
-    return content
-      .split(/[.!?]/)
-      .filter((sentence) => sentence.trim().split(" ").length > 20);
-  };
-
-  const syllableSplit = (content) => {
-    return content.replace(/([aeiouyàâéèêëîïôùûü])/gi, "$1-");
   };
 
   const dictionaryCorrection = async () => {
@@ -66,25 +56,13 @@ export default function Home() {
 
       const data = await response.json();
 
-      if (data.correctedText) {
-        setOriginalText(text);
-        setCorrectedText(data.correctedText);
-        setText(data.correctedText);
-        setExplanations(data.explanations || []);
-        setReadability(calculateReadability(data.correctedText));
-        setComplexSentences(
-          detectComplexSentences(data.correctedText)
-        );
-
-        setHistory((prev) => [
-          {
-            before: text,
-            after: data.correctedText,
-            date: new Date().toLocaleString(),
-          },
-          ...prev,
-        ]);
-      }
+      setOriginalText(text);
+      setCorrectedText(data.correctedText || "");
+      setText(data.correctedText || text);
+      setExplanations(data.explanations || []);
+      setTeacherAdvice(data.teacherAdvice || "");
+      setSimplifiedText(data.simplifiedText || "");
+      setReadability(calculateReadability(data.correctedText || text));
     } catch (error) {
       console.error(error);
     }
@@ -93,10 +71,7 @@ export default function Home() {
   };
 
   const speakText = () => {
-    const speech = new SpeechSynthesisUtterance(
-      correctedText || text
-    );
-
+    const speech = new SpeechSynthesisUtterance(correctedText || text);
     speech.lang = "fr-FR";
     speech.rate = speechRate;
 
@@ -104,27 +79,10 @@ export default function Home() {
     window.speechSynthesis.speak(speech);
   };
 
-  const pauseSpeech = () => {
-    window.speechSynthesis.pause();
-  };
-
-  const resumeSpeech = () => {
-    window.speechSynthesis.resume();
-  };
-
-  const stopSpeech = () => {
-    window.speechSynthesis.cancel();
-  };
-
   const exportPDF = () => {
     const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text("LireFacile", 10, 15);
-
-    doc.setFontSize(12);
+    doc.text("LireFacile", 10, 10);
     doc.text(correctedText || text, 10, 30);
-
     doc.save("LireFacile.pdf");
   };
 
@@ -187,52 +145,28 @@ export default function Home() {
             marginBottom: "20px",
           }}
         >
-          <button
-            style={buttonStyle}
-            onClick={() => setDarkMode(!darkMode)}
-          >
+          <button style={buttonStyle} onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? "Mode Clair" : "Mode Sombre"}
           </button>
 
-          <button
-            style={buttonStyle}
-            onClick={() => setDyslexicMode(!dyslexicMode)}
-          >
+          <button style={buttonStyle} onClick={() => setDyslexicMode(!dyslexicMode)}>
             Police Dyslexie
           </button>
 
-          <button
-            style={buttonStyle}
-            onClick={dictionaryCorrection}
-          >
-            {loading ? "Correction..." : "Correction"}
+          <button style={buttonStyle} onClick={() => setProfMode(!profMode)}>
+            {profMode ? "Mode Normal" : "Prof de Français"}
+          </button>
+
+          <button style={buttonStyle} onClick={dictionaryCorrection}>
+            {loading ? "Correction..." : "Corriger"}
           </button>
 
           <button style={buttonStyle} onClick={speakText}>
             Lecture
           </button>
 
-          <button style={buttonStyle} onClick={pauseSpeech}>
-            Pause
-          </button>
-
-          <button style={buttonStyle} onClick={resumeSpeech}>
-            Reprendre
-          </button>
-
-          <button style={buttonStyle} onClick={stopSpeech}>
-            Stop
-          </button>
-
           <button style={buttonStyle} onClick={exportPDF}>
             PDF
-          </button>
-
-          <button
-            style={buttonStyle}
-            onClick={() => setSyllables(syllableSplit(text))}
-          >
-            Lecture syllabique
           </button>
         </div>
 
@@ -265,9 +199,7 @@ export default function Home() {
             max="2"
             step="0.1"
             value={speechRate}
-            onChange={(e) =>
-              setSpeechRate(Number(e.target.value))
-            }
+            onChange={(e) => setSpeechRate(Number(e.target.value))}
           />
         </div>
 
@@ -290,25 +222,13 @@ export default function Home() {
             <h2>Lisibilité</h2>
             <p>{readability}</p>
 
-            {complexSentences.length > 0 && (
-              <>
-                <h2>Phrases complexes</h2>
-
-                {complexSentences.map((sentence, index) => (
-                  <p key={index}>⚠️ {sentence}</p>
-                ))}
-              </>
-            )}
-
             {explanations.length > 0 && (
               <>
                 <h2>Explications</h2>
-
                 <ul>
                   {explanations.map((item, index) => (
                     <li key={index}>
-                      <strong>{item.original}</strong> →{" "}
-                      {item.corrected}
+                      <strong>{item.original}</strong> → {item.corrected}
                       <br />
                       {item.explanation || item.reason}
                     </li>
@@ -319,52 +239,25 @@ export default function Home() {
           </div>
         )}
 
-        {syllables && (
+        {profMode && correctedText && (
           <div
             style={{
               marginTop: "30px",
               padding: "25px",
               borderRadius: "20px",
-              backgroundColor: darkMode ? "#374151" : "#e5e7eb",
+              backgroundColor: darkMode ? "#1e3a8a" : "#dbeafe",
               ...commonTextStyle,
             }}
           >
-            <h2>Lecture syllabique</h2>
-            <p>{syllables}</p>
-          </div>
-        )}
-
-        {history.length > 0 && (
-          <div
-            style={{
-              marginTop: "30px",
-              padding: "25px",
-              borderRadius: "20px",
-              backgroundColor: darkMode ? "#374151" : "#e5e7eb",
-              ...commonTextStyle,
-            }}
-          >
-            <h2>Historique</h2>
-
-            {history.map((item, index) => (
-              <div key={index} style={{ marginBottom: "20px" }}>
-                <p>
-                  <strong>Date :</strong> {item.date}
-                </p>
-
-                <p>
-                  <strong>Avant :</strong> {item.before}
-                </p>
-
-                <p>
-                  <strong>Après :</strong> {item.after}
-                </p>
-              </div>
-            ))}
+            <h2>Prof de Français</h2>
+            <h3>Conseil pédagogique</h3>
+            <p>{teacherAdvice}</p>
+            <h3>Version simplifiée</h3>
+            <p>{simplifiedText}</p>
           </div>
         )}
       </div>
     </div>
   );
 }
-
+```
