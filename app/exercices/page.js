@@ -61,63 +61,41 @@ function ExercisesContent() {
     };
   }
 
-  function generateExercise(level, profil) {
+function generateExercise(level, profil) {
   const randomWord = randomItem(words);
 
-  // Images plus stables et moins confuses
   const imageLibrary = {
-    maison:
-      "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-    voiture:
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
-    chat:
-      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
-    chien:
-      "https://images.unsplash.com/photo-1517849845537-4d257902454a",
-    soleil:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    banane:
-      "https://images.unsplash.com/photo-1574226516831-e1dff420e37f",
-    pomme:
-      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
-    ordinateur:
-      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
-    montagne:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
-    école:
-      "https://images.unsplash.com/photo-1580582932707-520aed937b7b",
-    livre:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794",
-    table:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-    chaise:
-      "https://images.unsplash.com/photo-1519947486511-46149fa0a254",
-    jardin:
-      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735",
-    musique:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
-    papillon:
-      "https://images.unsplash.com/photo-1444927714506-8492d94b4e3d",
-    bateau:
-      "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
-    vélo:
-      "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8",
-    forêt:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+    maison: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
+    voiture: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+    chat: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+    chien: "https://images.unsplash.com/photo-1517849845537-4d257902454a",
+    soleil: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    banane: "https://images.unsplash.com/photo-1574226516831-e1dff420e37f",
+    pomme: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+    ordinateur: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+    montagne: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+    école: "https://images.unsplash.com/photo-1580582932707-520aed937b7b",
+    livre: "https://images.unsplash.com/photo-1512820790803-83ca734da794",
+    table: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
+    chaise: "https://images.unsplash.com/photo-1519947486511-46149fa0a254",
+    jardin: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735",
+    musique: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
+    papillon: "https://images.unsplash.com/photo-1444927714506-8492d94b4e3d",
+    bateau: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
+    vélo: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8",
+    forêt: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
   };
 
   const image = imageLibrary[randomWord] || null;
-
   const adjustedLevel = level + difficulty;
 
-  // ======================
+  // ====================
   // AVC
-  // ======================
+  // ====================
   if (profil === "AVC") {
-    const types = ["mot", "phrase", "memoire"];
-    const selected = randomItem(types);
+    const type = randomItem(["mot", "phrase", "memoire"]);
 
-    if (selected === "mot") {
+    if (type === "mot") {
       return {
         type: "mot",
         instruction: "Complète le mot :",
@@ -127,10 +105,10 @@ function ExercisesContent() {
       };
     }
 
-    if (selected === "phrase") {
+    if (type === "phrase") {
       return {
         type: "phrase",
-        instruction: "Complète la phrase grâce à l'image :",
+        instruction: "Observe l'image puis complète :",
         question: "Je vois une _____",
         answer: randomWord,
         image,
@@ -138,122 +116,106 @@ function ExercisesContent() {
     }
 
     const memoryWords = [...words]
-      .sort(() => 0.5 - Math.random())
+      .sort(() => Math.random() - 0.5)
       .slice(0, Math.min(adjustedLevel + 2, 6));
 
     return {
       type: "memoire",
-      instruction: "Mémorise les mots affichés :",
+      instruction: "Mémorise les mots :",
       question: memoryWords.join(" "),
       answer: memoryWords.join(" "),
       image: null,
     };
   }
 
-  // ======================
+  // ====================
   // DYSLEXIE
-  // ======================
+  // ====================
   if (profil === "Dyslexie") {
-    const types = ["lecture", "mot", "phrase"];
-    const selected = randomItem(types);
+    const type = randomItem(["lecture", "mot"]);
 
-    if (selected === "lecture") {
+    if (type === "lecture") {
       return {
         type: "lecture",
-        instruction: "Lis puis écris correctement le mot :",
+        instruction: "Lis puis écris le mot :",
         question: randomWord,
         answer: randomWord,
         image,
       };
     }
 
-    if (selected === "mot") {
-      return {
-        type: "mot",
-        instruction: "Complète le mot :",
-        question: `${randomWord.slice(0, 3)}___`,
-        answer: randomWord,
-        image,
-      };
-    }
-
     return {
-      type: "phrase",
-      instruction: "Observe l'image puis écris le mot :",
-      question: "Quel est cet objet ?",
+      type: "mot",
+      instruction: "Complète le mot :",
+      question: `${randomWord.slice(0, 3)}___`,
       answer: randomWord,
       image,
     };
   }
 
-  // ======================
+  // ====================
   // AUTISME
-  // ======================
-if (profil === "Autisme") {
-  const routines = [
-    {
-      q: "Que fais-tu après le réveil ?",
-      a: "petit déjeuner",
-      img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
-    },
-    {
-      q: "Quelle couleur a le ciel ?",
-      a: "bleu",
-      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    },
-    {
-      q: "Que fais-tu avant de dormir ?",
-      a: "se brosser les dents",
-      img: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2",
-    },
-    {
-      q: "Que fais-tu pour te laver ?",
-      a: "prendre une douche",
-      img: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1",
-    },
-    {
-      q: "Que mets-tu pour dormir ?",
-      a: "pyjama",
-      img: "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-    },
-  ];
+  // ====================
+  if (profil === "Autisme") {
+    const routines = [
+      {
+        q: "Que fais-tu après le réveil ?",
+        a: "petit déjeuner",
+        img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
+      },
+      {
+        q: "Quelle couleur a le ciel ?",
+        a: "bleu",
+        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+      },
+      {
+        q: "Que fais-tu avant de dormir ?",
+        a: "se brosser les dents",
+        img: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2",
+      },
+      {
+        q: "Que mets-tu pour dormir ?",
+        a: "pyjama",
+        img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+      },
+    ];
 
-  const routine = randomItem(routines);
+    const routine = randomItem(routines);
 
-  return {
-    type: "routine",
-    instruction: "Observe l'image puis réponds :",
-    question: routine.q,
-    answer: routine.a,
-    image: routine.img,
-  };
-}
-  // ======================
+    return {
+      type: "routine",
+      instruction: "Observe puis réponds :",
+      question: routine.q,
+      answer: routine.a,
+      image: routine.img,
+    };
+  }
+
+  // ====================
   // MÉMOIRE
-  // ======================
+  // ====================
   if (profil === "Mémoire") {
     const memoryWords = [...words]
-      .sort(() => 0.5 - Math.random())
+      .sort(() => Math.random() - 0.5)
       .slice(0, Math.min(adjustedLevel + 3, 8));
 
     return {
       type: "memoire",
-      instruction: "Observe et mémorise les mots :",
+      instruction: "Observe et mémorise :",
       question: memoryWords.join(" "),
       answer: memoryWords.join(" "),
       image: null,
     };
   }
 
-  // ======================
+  // ====================
   // CONCENTRATION
-  // ======================
+  // ====================
   if (profil === "Concentration") {
     const suites = [
       { q: "2, 4, 6, 8, ___", a: "10" },
       { q: "5, 10, 15, ___", a: "20" },
       { q: "1, 3, 5, 7, ___", a: "9" },
-      { q: "10, 20, 30, ___", a: "40" },
     ];
 
     const suite = randomItem(suites);
@@ -267,9 +229,9 @@ if (profil === "Autisme") {
     };
   }
 
-  // ======================
+  // ====================
   // MATH
-  // ======================
+  // ====================
   if (profil === "Math") {
     const max = adjustedLevel * 10;
 
@@ -277,26 +239,26 @@ if (profil === "Autisme") {
     const b = Math.floor(Math.random() * max);
 
     const operations = ["+", "-", "*"];
-    const operation = randomItem(operations);
+    const op = randomItem(operations);
 
     let result = 0;
 
-    if (operation === "+") result = a + b;
-    if (operation === "-") result = a - b;
-    if (operation === "*") result = a * b;
+    if (op === "+") result = a + b;
+    if (op === "-") result = a - b;
+    if (op === "*") result = a * b;
 
     return {
       type: "math",
       instruction: "Résous le calcul :",
-      question: `${a} ${operation} ${b}`,
+      question: `${a} ${op} ${b}`,
       answer: result.toString(),
       image: null,
     };
   }
 
-  // ======================
+  // ====================
   // FALLBACK
-  // ======================
+  // ====================
   return {
     type: "mot",
     instruction: "Écris le mot :",
