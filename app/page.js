@@ -90,15 +90,7 @@ export default function ProfilPage() {
     </div>
   );
 }
-```
 
----
-
-# À ajouter dans globals.css
-
-Ajoute ce bloc tout en bas de ton fichier `globals.css`.
-
-```css
 /* ========================= */
 /* ANALYSE COGNITIVE IA */
 /* ========================= */
