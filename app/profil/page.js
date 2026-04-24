@@ -1,58 +1,79 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function ProfilPage() {
-  const profils = [
-    {
-      title: "AVC",
-      description: "Mémoire, langage, récupération cognitive",
-      color: "#60a5fa",
-    },
-    {
-      title: "Dyslexie",
-      description: "Lecture, compréhension, orthographe",
-      color: "#34d399",
-    },
-    {
-      title: "Autisme",
-      description: "Routine, logique, concentration",
-      color: "#fbbf24",
-    },
-    {
-      title: "Mémoire",
-      description: "Stimuler les souvenirs et l’attention",
-      color: "#a78bfa",
-    },
-    {
-      title: "Concentration",
-      description: "Travail du focus et du calme",
-      color: "#fb7185",
-    },
-  ];
+  const [profile, setProfile] = useState(null);
 
-return (
-    <div className="page-container">
-      <div className="main-card">
-        <h1 className="main-title">
-          Choisissez votre parcours
-        </h1>
-<div className="profile-grid">
-          {profils.map((profil) => (
-            <Link
-              key={profil.title}
-              href={`/exercices?profil=${profil.title}`}
-              className="profile-card"
-              style={{
-                borderTop: `8px solid ${profil.color}`,
-              }}
-            >
-              <h2>{profil.title}</h2>
-              <p>{profil.description}</p>
-            </Link>
-          ))}
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("evaluation"));
+
+    if (!data) {
+      setProfile({
+        memory: 50,
+        attention: 50,
+        dyslexiaRisk: 50,
+        reading: 50,
+      });
+      return;
+    }
+
+    const cognitiveProfile = {
+      memory: data.memory ? 70 : 40,
+      attention: data.attention ? 60 : 80,
+      dyslexiaRisk: data.dyslexia ? 80 : 20,
+      reading: data.reading ? 55 : 85,
+    };
+
+    setProfile(cognitiveProfile);
+  }, []);
+
+  if (!profile) {
+    return (
+      <div className="page-container">
+        <div className="main-card">
+          <p>Chargement...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return (
+    <div className="page-container">
+      <div className="main-card fade-in">
+        <h1 className="main-title">Profil Cognitif IA</h1>
+
+        <div className="analysis-box">
+          <div className="analysis-title">
+            Analyse Cognitive IA
+          </div>
+
+          <div className="analysis-grid">
+            <div className="analysis-card">
+              <div className="analysis-label">Mémoire</div>
+              <div className="analysis-value">{profile.memory}%</div>
+            </div>
+
+            <div className="analysis-card">
+              <div className="analysis-label">Attention</div>
+              <div className="analysis-value">{profile.attention}%</div>
+            </div>
+
+            <div className="analysis-card">
+              <div className="analysis-label">Risque Dys</div>
+              <div className="analysis-value">{profile.dyslexiaRisk}%</div>
+            </div>
+
+            <div className="analysis-card">
+              <div className="analysis-label">Lecture</div>
+              <div className="analysis-value">{profile.reading}%</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="assistant-box">
+          <div className="assistant-avatar">🧠</div>
+          <div className="assistant-message">
+            L'IA analyse ton profil et adapte automatiquement les exercices.
 }
