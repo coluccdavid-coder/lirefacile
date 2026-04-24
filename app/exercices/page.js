@@ -368,8 +368,14 @@ useEffect(() => {
         correctAnswer.split(" ").length &&
       userAnswer
         .split(" ")
-        .every((word) => correctAnswer.split(" ").includes(word))
-    : userAnswer === correctAnswer;
+        .every((word) =>
+          correctAnswer.split(" ").includes(word)
+        )
+    : (
+        userAnswer === correctAnswer ||
+        correctAnswer.includes(userAnswer) ||
+        userAnswer.includes(correctAnswer)
+      );
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
