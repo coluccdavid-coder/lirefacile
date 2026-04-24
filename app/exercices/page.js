@@ -12,14 +12,14 @@ function ExercisesContent() {
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [difficulty, setDifficulty] = useState(1);
-  const [goodStreak, setGoodStreak] = useState(0);
-  const [badStreak, setBadStreak] = useState(0);
   const [currentExercise, setCurrentExercise] = useState(null);
-  const [energy, setEnergy] = useState(100);
   const [xp, setXp] = useState(0);
   const [badge, setBadge] = useState(null);
   const [lastQuestions, setLastQuestions] = useState([]);
   const [startTime, setStartTime] = useState(Date.now());
+  const [assistantMessage, setAssistantMessage] = useState(
+    "Bonjour 👋 Je vais t'aider aujourd'hui."
+  );
 
   const [cognitiveProfile, setCognitiveProfile] = useState({
     memory: 50,
@@ -136,28 +136,6 @@ function ExercisesContent() {
     };
   }
 
-  function adaptDifficulty(history) {
-    const recent = history.slice(-10);
-
-    if (recent.length === 0) return "keep";
-
-    const successRate =
-      recent.filter((x) => x.correct).length / recent.length;
-
-    if (successRate > 0.8) return "increase";
-    if (successRate < 0.5) return "decrease";
-
-    return "keep";
-  }
-
-  function calculateFatigue(history) {
-    const recent = history.slice(-5);
-
-    return recent.filter(
-      (x) => !x.correct || x.responseTime > 12
-    ).length;
-  }
-
   useEffect(() => {
     let newExercise;
     let attempts = 0;
@@ -201,72 +179,49 @@ function ExercisesContent() {
 
     const isCorrect = userAnswer === correctAnswer;
 
-    const sessionData = {
-      correct: isCorrect,
-      difficulty,
-      responseTime,
-      profile: profil,
-      timestamp: Date.now(),
-    };
-
     const savedAnalytics =
       JSON.parse(localStorage.getItem("analytics")) || [];
 
-    savedAnalytics.push(sessionData);
+    savedAnalytics.push({
+      correct: isCorrect,
+      responseTime,
+      difficulty,
+      profil,
+      timestamp: Date.now(),
+    });
 
     localStorage.setItem(
       "analytics",
       JSON.stringify(savedAnalytics)
     );
 
-    const aiDecision = adaptDifficulty(savedAnalytics);
-
-    if (aiDecision === "increase") {
-      setDifficulty((prev) => Math.min(prev + 1, 5));
-    }
-
-    if (aiDecision === "decrease") {
-      setDifficulty((prev) => Math.max(prev - 1, 1));
-    }
-
-    const fatigueScore = calculateFatigue(savedAnalytics);
+    const fatigue = savedAnalytics
+      .slice(-5)
+      .filter((x) => !x.correct || x.responseTime > 12).length;
 
     setCognitiveProfile((prev) => ({
       ...prev,
-      fatigue: fatigueScore * 10,
+      fatigue: fatigue * 10,
     }));
-
-    if (fatigueScore >= 4) {
-      setFeedback("Pause recommandée 🧘");
-      return;
-    }
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
       setXp((prev) => prev + 10);
-
-      const streak = goodStreak + 1;
-
-      setGoodStreak(streak);
-      setBadStreak(0);
+      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
+      setAssistantMessage(
+        "Bravo 🎉 Continue comme ça, tu progresses bien."
+      );
 
       if (score + 1 === 10) setBadge("🌟 Débutant");
       if (score + 1 === 25) setBadge("🏆 Expert");
       if (score + 1 === 50) setBadge("👑 Maître Cognitif");
-
-      setEnergy((prev) => Math.max(0, prev - 1));
-
-      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
     } else {
-      const streak = badStreak + 1;
-
-      setBadStreak(streak);
-      setGoodStreak(0);
-
-      setEnergy((prev) => Math.max(0, prev - 3));
-
       setFeedback(
         `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
+      );
+
+      setAssistantMessage(
+        "Ce n'est pas grave 👍 Observe bien l'image et réessaie."
       );
     }
   };
@@ -291,6 +246,14 @@ function ExercisesContent() {
             className="progress-bar"
             style={{ width: `${progress}%` }}
           />
+        </div>
+
+        <div className="assistant-box">
+          <div className="assistant-avatar">🧠</div>
+
+          <div className="assistant-message">
+            {assistantMessage}
+          </div>
         </div>
 
         <div className="exercise-box">
