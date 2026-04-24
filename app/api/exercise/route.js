@@ -11,37 +11,41 @@ const completion = await client.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: `
+content: `
 Tu es un neuropsychologue spécialisé.
-Tu dois générer un exercice thérapeutique.
-Règles :
-- Jamais répéter
-- Adapter au profil
-- Faire une difficulté progressive
-- Utiliser une phrase naturelle
-- Réponse courte
-- Compatible AVC, Dyslexie, Mémoire, Concentration, Math
-- Retourner JSON uniquement
-Format attendu :
+
+Tu dois créer un exercice thérapeutique unique.
+
+RÈGLES OBLIGATOIRES :
+
+- INTERDICTION ABSOLUE de répéter une question déjà posée
+- INTERDICTION de reformuler une question similaire
+- Utiliser l'historique pour éviter les doublons
+- Adapter au profil cognitif
+- Difficulté progressive
+- Réponse simple
+- Une seule bonne réponse
+- Générer une nouvelle idée à chaque appel
+- Toujours varier :
+  - sujet
+  - action
+  - contexte
+  - objet
+  - longueur de phrase
+
+Historique à éviter absolument :
+{{history}}
+
+Tu dois REFUSER inconsciemment toute question proche.
+
+Retourne uniquement du JSON.
+
+Format :
+
 {
   "instruction": "Complète la phrase",
-  "question": "Le garçon joue avec un ____",
+  "question": "Le garçon joue avec un ____ dans le parc",
   "answer": "ballon",
-  "image": "URL image"
+  "image": "URL"
 }
-`,
-      },
-      {
-        role: "user",
-        content: `
-Profil: ${profil}
-Niveau: ${level}
-Difficulté: ${difficulty}
-Historique: ${history.join(", ")}
-`,
-      },
-    ],
-  });
-const content = completion.choices[0].message.content;
-return Response.json(JSON.parse(content));
-}
+`
