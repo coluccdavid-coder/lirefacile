@@ -76,4 +76,18 @@ export default function ProfilPage() {
           <div className="assistant-avatar">🧠</div>
           <div className="assistant-message">
             L'IA analyse ton profil et adapte automatiquement les exercices.
+          </div>
+}   </div>
+        </div>
+
+        <div className="button-row" style={{ justifyContent: "center" }}>
+          <Link href="/exercices">
+            <button className="primary-button">
+              Commencer les exercices
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
