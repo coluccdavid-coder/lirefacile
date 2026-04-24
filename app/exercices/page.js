@@ -281,7 +281,9 @@ function ExercisesContent() {
         setBadStreak(0);
       }
 
-      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+      setFeedback(
+        `Incorrect ❌ La bonne réponse était : ${currentExercise.answer}`
+      );
     }
   };
 
