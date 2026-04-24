@@ -1,0 +1,101 @@
+/* RESET GLOBAL */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BODY */
+
+body {
+  background-color: #e5e5e5;
+  font-family: Arial, sans-serif;
+  color: #111;
+}
+
+/* POLICE DYSLEXIE */
+
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("/fonts/OpenDyslexic-Regular.otf") format("opentype");
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #dcdcdc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b5b5b5;
+  border-radius: 10px;
+}
+
+/* INPUTS */
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/* ACCESSIBILITÉ AVC */
+
+button {
+  transition: 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* LECTURE FACILE */
+
+.easy-reading {
+  line-height: 1.8;
+  letter-spacing: 1px;
+  word-spacing: 3px;
+}
+
+/* CARDS */
+
+.card {
+  background: #f5f5f5;
+  border-radius: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* INPUTS AVC */
+
+.large-input {
+  font-size: 28px;
+  padding: 20px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+}
+
+/* TITRES */
+
+.title-large {
+  font-size: 54px;
+  font-weight: bold;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .title-large {
+    font-size: 38px;
+  }
+
+  .large-input {
+    font-size: 22px;
+  }
+}
