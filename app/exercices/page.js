@@ -11,133 +11,138 @@ function ExercisesContent() {
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [dyslexiaFont, setDyslexiaFont] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(true);
-  const [timer, setTimer] = useState(10);
   const [difficulty, setDifficulty] = useState(1);
   const [goodStreak, setGoodStreak] = useState(0);
   const [badStreak, setBadStreak] = useState(0);
-  const [lastQuestions, setLastQuestions] = useState([]);
-  const [badge, setBadge] = useState(null);
+  const [currentExercise, setCurrentExercise] = useState(null);
   const [energy, setEnergy] = useState(100);
   const [darkMode, setDarkMode] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [currentExercise, setCurrentExercise] = useState(null);
+  const [showQuestion, setShowQuestion] = useState(true);
+  const [timer, setTimer] = useState(10);
+  const [badge, setBadge] = useState(null);
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
-
-  const words = [
-    "maison",
-    "voiture",
-    "chat",
-    "chien",
-    "soleil",
-    "banane",
-    "pomme",
-    "ordinateur",
-    "montagne",
-    "école",
-    "livre",
-    "table",
-    "chaise",
-    "jardin",
-    "musique",
-    "papillon",
-    "bateau",
-    "vélo",
-    "forêt",
-  ];
-
-  const imageLibrary = {
-    maison: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-    voiture: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
-    chat: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
-    chien: "https://images.unsplash.com/photo-1517849845537-4d257902454a",
-    soleil: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    banane: "https://images.unsplash.com/photo-1574226516831-e1dff420e37f",
-    pomme: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
-    ordinateur: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
-    montagne: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
-    école: "https://images.unsplash.com/photo-1580582932707-520aed937b7b",
-  };
 
   const randomItem = (array) =>
     array[Math.floor(Math.random() * array.length)];
 
+  const exercises = {
+    AVC: {
+      1: [
+        { q: "Je bois de l'_____", a: "eau" },
+        { q: "Je lis un _____", a: "livre" },
+        { q: "Je vois un _____", a: "chat" },
+      ],
+      2: [
+        { q: "Le chat dort sur le _____", a: "canapé" },
+        { q: "Je mange une pomme _____", a: "rouge" },
+      ],
+      3: [
+        {
+          q: "Le petit garçon joue avec un _____ dans le jardin",
+          a: "ballon",
+        },
+      ],
+      4: [
+        {
+          q: "Chaque matin je prends mon café avant d'aller au _____",
+          a: "travail",
+        },
+      ],
+      5: [
+        {
+          q: "Après avoir mangé je range les assiettes dans le _____",
+          a: "placard",
+        },
+      ],
+    },
+
+    Dyslexie: {
+      1: [
+        { q: "chat", a: "chat" },
+        { q: "soleil", a: "soleil" },
+      ],
+      2: [
+        { q: "maison", a: "maison" },
+        { q: "voiture", a: "voiture" },
+      ],
+      3: [
+        { q: "ordinateur", a: "ordinateur" },
+        { q: "papillon", a: "papillon" },
+      ],
+      4: [
+        { q: "Le chat dort", a: "chat" },
+      ],
+      5: [
+        { q: "Le garçon joue dans le jardin", a: "garçon" },
+      ],
+    },
+
+    Mémoire: {
+      1: [{ q: "chat maison", a: "chat maison" }],
+      2: [{ q: "chat maison livre", a: "chat maison livre" }],
+      3: [{ q: "chat maison livre soleil", a: "chat maison livre soleil" }],
+      4: [
+        {
+          q: "chat maison livre soleil voiture",
+          a: "chat maison livre soleil voiture",
+        },
+      ],
+      5: [
+        {
+          q: "chat maison livre soleil voiture jardin",
+          a: "chat maison livre soleil voiture jardin",
+        },
+      ],
+    },
+
+    Concentration: {
+      1: [{ q: "2, 4, 6, ___", a: "8" }],
+      2: [{ q: "5, 10, 15, ___", a: "20" }],
+      3: [{ q: "1, 3, 5, 7, ___", a: "9" }],
+      4: [{ q: "10, 20, 30, 40, ___", a: "50" }],
+      5: [{ q: "3, 6, 12, 24, ___", a: "48" }],
+    },
+
+    Math: {
+      1: [{ q: "2 + 3", a: "5" }],
+      2: [{ q: "8 + 7", a: "15" }],
+      3: [{ q: "12 - 5", a: "7" }],
+      4: [{ q: "6 × 7", a: "42" }],
+      5: [{ q: "45 ÷ 5", a: "9" }],
+    },
+  };
+
   function generateExercise(level, profil) {
-    const randomWord = randomItem(words);
-    const image = imageLibrary[randomWord] || null;
-    const adjustedLevel = level + difficulty;
+    const safeLevel = Math.min(level + difficulty - 1, 5);
 
-    if (profil === "AVC") {
-      return {
-        type: "mot",
-        instruction: "Complète le mot :",
-        question: `${randomWord.slice(0, 2)}____`,
-        answer: randomWord,
-        image,
-      };
-    }
+    const profileExercises = exercises[profil];
 
-    if (profil === "Dyslexie") {
-      return {
-        type: "lecture",
-        instruction: "Lis puis écris le mot :",
-        question: randomWord,
-        answer: randomWord,
-        image,
-      };
-    }
+    if (!profileExercises) return null;
 
-    if (profil === "Mémoire") {
-      const memoryWords = [...words]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(adjustedLevel + 2, 6));
+    const levelExercises = profileExercises[safeLevel];
 
-      return {
-        type: "memoire",
-        instruction: "Mémorise les mots :",
-        question: memoryWords.join(" "),
-        answer: memoryWords.join(" "),
-        image: null,
-      };
-    }
-
-    if (profil === "Math") {
-      const max = adjustedLevel * 10;
-
-      const a = Math.floor(Math.random() * max);
-      const b = Math.floor(Math.random() * max);
-
-      const operations = ["+", "-", "*"];
-      const op = randomItem(operations);
-
-      let result = 0;
-
-      if (op === "+") result = a + b;
-      if (op === "-") result = a - b;
-      if (op === "*") result = a * b;
-
-      return {
-        type: "math",
-        instruction: "Résous le calcul :",
-        question: `${a} ${op} ${b}`,
-        answer: result.toString(),
-        image: null,
-      };
-    }
+    const selected = randomItem(levelExercises);
 
     return {
-      type: "mot",
-      instruction: "Écris le mot :",
-      question: randomWord,
-      answer: randomWord,
-      image,
+      type: profil,
+      instruction:
+        profil === "AVC"
+          ? "Complète la phrase :"
+          : profil === "Dyslexie"
+          ? "Lis puis écris :"
+          : profil === "Mémoire"
+          ? "Mémorise :"
+          : profil === "Math"
+          ? "Résous le calcul :"
+          : "Trouve la réponse :",
+      question: selected.q,
+      answer: selected.a,
     };
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem("lirefacile-progress");
+    const saved = localStorage.getItem("progress");
 
     if (saved) {
       const data = JSON.parse(saved);
@@ -150,33 +155,13 @@ function ExercisesContent() {
   }, []);
 
   useEffect(() => {
-    let newExercise;
-    let attempts = 0;
-
-    do {
-      newExercise = generateExercise(currentLevel, profil);
-      attempts++;
-    } while (
-      lastQuestions.includes(newExercise.question) &&
-      attempts < 20
-    );
-
+    const newExercise = generateExercise(currentLevel, profil);
     setCurrentExercise(newExercise);
-
-    setLastQuestions((prev) => {
-      const updated = [...prev, newExercise.question];
-
-      if (updated.length > 10) {
-        updated.shift();
-      }
-
-      return updated;
-    });
   }, [exerciseIndex, profil]);
 
   useEffect(() => {
     localStorage.setItem(
-      "lirefacile-progress",
+      "progress",
       JSON.stringify({
         score,
         exerciseIndex,
@@ -189,7 +174,7 @@ function ExercisesContent() {
   useEffect(() => {
     if (!currentExercise) return;
 
-    if (currentExercise.type === "memoire") {
+    if (profil === "Mémoire") {
       setShowQuestion(true);
       setTimer(10);
 
@@ -211,20 +196,12 @@ function ExercisesContent() {
     setShowQuestion(true);
   }, [currentExercise]);
 
-  useEffect(() => {
-    if (energy <= 20) {
-      setFeedback("Pause recommandée 🧘");
-    }
-  }, [energy]);
-
-  const normalizeText = (text) => {
-    return text
+  const normalizeText = (text) =>
+    text
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .replace(/\s+/g, " ");
-  };
+      .trim();
 
   const checkAnswer = () => {
     if (!currentExercise) return;
@@ -233,36 +210,22 @@ function ExercisesContent() {
     const correctAnswer = normalizeText(currentExercise.answer);
 
     const isCorrect =
-      currentExercise.type === "memoire"
-        ? userAnswer.split(" ").length ===
-            correctAnswer.split(" ").length &&
-          userAnswer
-            .split(" ")
-            .every((word) =>
-              correctAnswer.split(" ").includes(word)
-            )
+      profil === "Mémoire"
+        ? userAnswer === correctAnswer
         : userAnswer === correctAnswer;
 
     setEnergy((prev) => Math.max(0, prev - 2));
 
-    setHistory((prev) => [
-      ...prev,
-      {
-        correct: isCorrect,
-        date: Date.now(),
-      },
-    ]);
-
     if (isCorrect) {
       setScore((prev) => prev + 1);
 
-      const newGood = goodStreak + 1;
+      const streak = goodStreak + 1;
 
-      setGoodStreak(newGood);
+      setGoodStreak(streak);
       setBadStreak(0);
 
-      if (newGood >= 5) {
-        setDifficulty((prev) => prev + 1);
+      if (streak >= 5) {
+        setDifficulty((prev) => Math.min(prev + 1, 5));
         setGoodStreak(0);
       }
 
@@ -271,18 +234,18 @@ function ExercisesContent() {
 
       setFeedback("Bonne réponse 👍");
     } else {
-      const newBad = badStreak + 1;
+      const streak = badStreak + 1;
 
-      setBadStreak(newBad);
+      setBadStreak(streak);
       setGoodStreak(0);
 
-      if (newBad >= 3) {
+      if (streak >= 3) {
         setDifficulty((prev) => Math.max(1, prev - 1));
         setBadStreak(0);
       }
 
       setFeedback(
-        `Incorrect ❌ La bonne réponse était : ${currentExercise.answer}`
+        `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
       );
     }
   };
@@ -309,12 +272,12 @@ function ExercisesContent() {
     const recognition = new SpeechRecognition();
 
     recognition.lang = "fr-FR";
-    recognition.start();
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setAnswer(transcript);
+      setAnswer(event.results[0][0].transcript);
     };
+
+    recognition.start();
   };
 
   const progress = ((exerciseIndex % 10) / 10) * 100;
@@ -323,16 +286,12 @@ function ExercisesContent() {
 
   return (
     <div className={`page-container ${darkMode ? "dark" : ""}`}>
-      <div className="main-card fade-in">
+      <div className="main-card">
         <h1 className="main-title">Exercices {profil}</h1>
 
         <div className="button-row">
           <button onClick={() => setDarkMode(!darkMode)}>
             🌙 Mode sombre
-          </button>
-
-          <button onClick={() => setDyslexiaFont(!dyslexiaFont)}>
-            Police Dyslexie
           </button>
 
           <button
@@ -364,32 +323,22 @@ function ExercisesContent() {
           />
         </div>
 
-        <div className={`exercise-box ${dyslexiaFont ? "dyslexia-font" : ""}`}>
-          <p>{currentExercise.instruction}</p>
+        <div className="exercise-box">
+          <div className="instruction-box">
+            <span className="instruction-label">Consigne</span>
+            <h3 className="instruction-text">
+              {currentExercise.instruction}
+            </h3>
+          </div>
 
-          {currentExercise.image && (
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <img
-                src={currentExercise.image}
-                alt="illustration"
-                style={{
-                  width: "220px",
-                  height: "220px",
-                  objectFit: "cover",
-                  borderRadius: "20px",
-                }}
-              />
-            </div>
-          )}
-
-          <h2>
+          <h2 className="exercise-question">
             {showQuestion
               ? currentExercise.question
-              : "Quels étaient les mots affichés ?"}
+              : "Quels étaient les mots ?"}
           </h2>
 
-          {currentExercise.type === "memoire" && showQuestion && (
-            <div>Disparition dans : {timer}s</div>
+          {profil === "Mémoire" && showQuestion && (
+            <div>Temps restant : {timer}s</div>
           )}
 
           <input
@@ -401,23 +350,27 @@ function ExercisesContent() {
                 checkAnswer();
               }
             }}
+            placeholder="Écris ta réponse"
             className="exercise-input"
           />
         </div>
 
         <div className="button-row">
           <button onClick={checkAnswer}>Vérifier</button>
-          <button onClick={nextExercise}>Exercice suivant</button>
+          <button onClick={nextExercise}>
+            Exercice suivant
+          </button>
         </div>
 
-        <div className={`feedback-box ${feedback ? "feedback-success" : ""}`}>
+        <div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
 
-        {badge && <div className="badge-box">Badge : {badge}</div>}
+        {badge && <div className="badge-box">{badge}</div>}
 
         <div className="score-box">
-          Score : {score} | Difficulté : {difficulty}
+          Score : {score} | Niveau : {currentLevel} |
+          Difficulté : {difficulty}
         </div>
       </div>
     </div>
