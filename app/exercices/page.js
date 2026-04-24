@@ -189,32 +189,35 @@ function ExercisesContent() {
   // ======================
   // AUTISME
   // ======================
-  if (profil === "Autisme") {
-    const routines = [
-      {
-        q: "Que fais-tu après le réveil ?",
-        a: "petit déjeuner",
-      },
-      {
-        q: "Quelle couleur a le ciel ?",
-        a: "bleu",
-      },
-      {
-        q: "Que fais-tu avant de dormir ?",
-        a: "se brosser les dents",
-      },
-    ];
+if (profil === "Autisme") {
+  const routines = [
+    {
+      q: "Que fais-tu après le réveil ?",
+      a: "petit déjeuner",
+      img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
+    },
+    {
+      q: "Quelle couleur a le ciel ?",
+      a: "bleu",
+      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    },
+    {
+      q: "Que fais-tu avant de dormir ?",
+      a: "se brosser les dents",
+      img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9",
+    },
+  ];
 
-    const routine = randomItem(routines);
+  const routine = randomItem(routines);
 
-    return {
-      type: "routine",
-      instruction: "Réponds simplement :",
-      question: routine.q,
-      answer: routine.a,
-      image: null,
-    };
-  }
+  return {
+    type: "routine",
+    instruction: "Réponds simplement :",
+    question: routine.q,
+    answer: routine.a,
+    image: routine.img,
+  };
+}
 
   // ======================
   // MÉMOIRE
