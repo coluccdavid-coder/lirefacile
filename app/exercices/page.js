@@ -1,9 +1,12 @@
 "use client";
+
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+
 function ExercisesContent() {
   const searchParams = useSearchParams();
   const profil = searchParams.get("profil") || "AVC";
+
 const [exerciseIndex, setExerciseIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
@@ -12,7 +15,9 @@ const [exerciseIndex, setExerciseIndex] = useState(0);
   const [showQuestion, setShowQuestion] = useState(true);
   const [timer, setTimer] = useState(10);
   const [level, setLevel] = useState(1);
+
 const currentLevel = Math.floor(exerciseIndex / 10) + 1;
+
 const words = [
     "maison",
     "voiture",
@@ -35,57 +40,79 @@ const words = [
     "vélo",
     "forêt",
   ];
+
 function randomItem(array) {
     return array[Math.floor(Math.random() * array.length)];
   }
+
 function generateMath(level) {
     const max = level * 10;
     const a = Math.floor(Math.random() * max);
     const b = Math.floor(Math.random() * max);
+
 return {
       type: "math",
       instruction: "Résous le calcul :",
       question: `${a} + ${b} = ?`,
       answer: String(a + b),
+      image: null,
     };
   }
+
 function generateExercise(level, profil) {
     const randomWord = randomItem(words);
+
+const image = `https://source.unsplash.com/400x400/?${encodeURIComponent(
+      randomWord
+    )}`;
+
 if (profil === "AVC") {
       const types = ["mot", "phrase", "memoire"];
       const selected = randomItem(types);
+
 if (selected === "mot") {
         return {
           type: "mot",
           instruction: "Complète le mot :",
           question: `${randomWord.slice(0, 2)}____`,
           answer: randomWord,
+          image,
         };
       }
+
 if (selected === "phrase") {
         return {
           type: "phrase",
           instruction: "Complète la phrase :",
-          question: `Je vois une _____`,
+          question: "Je vois une _____",
           answer: randomWord,
+          image,
         };
       }
-const memoryWords = words.sort(() => 0.5 - Math.random()).slice(0, Math.min(level + 2, 6));
+
+const memoryWords = [...words]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.min(level + 2, 6));
+
 return {
         type: "memoire",
         instruction: "Mémorise les mots :",
         question: memoryWords.join(", "),
         answer: memoryWords.join(" "),
+        image: null,
       };
     }
+
 if (profil === "Dyslexie") {
       return {
         type: "lecture",
         instruction: "Écris correctement le mot :",
         question: randomWord,
         answer: randomWord,
+        image,
       };
     }
+
 if (profil === "Autisme") {
       const routines = [
         {
@@ -101,52 +128,70 @@ if (profil === "Autisme") {
           a: "se brosser les dents",
         },
       ];
+
 const routine = randomItem(routines);
+
 return {
         type: "routine",
         instruction: "Réponds simplement :",
         question: routine.q,
         answer: routine.a,
+        image,
       };
     }
+
 if (profil === "Mémoire") {
-      const memoryWords = words.sort(() => 0.5 - Math.random()).slice(0, Math.min(level + 3, 8));
+      const memoryWords = [...words]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.min(level + 3, 8));
+
 return {
         type: "memoire",
         instruction: "Observe et mémorise :",
         question: memoryWords.join(", "),
         answer: memoryWords.join(" "),
+        image: null,
       };
     }
+
 if (profil === "Concentration") {
       const numbers = [2, 4, 6, 8, 10];
+
 return {
         type: "attention",
         instruction: "Trouve le nombre suivant :",
         question: `${numbers.join(", ")}, ___`,
         answer: "12",
+        image,
       };
     }
+
 if (profil === "Math") {
       return generateMath(level);
     }
+
 return {
       type: "mot",
       instruction: "Écris le mot :",
       question: randomWord,
       answer: randomWord,
+      image,
     };
   }
+
 const [currentExercise, setCurrentExercise] = useState(
     generateExercise(1, profil)
   );
+
 useEffect(() => {
     setCurrentExercise(generateExercise(level, profil));
   }, [profil]);
+
 useEffect(() => {
     if (currentExercise.type === "memoire") {
       setShowQuestion(true);
       setTimer(10);
+
 const interval = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
@@ -154,13 +199,17 @@ const interval = setInterval(() => {
             setShowQuestion(false);
             return 0;
           }
+
 return prev - 1;
         });
       }, 1000);
+
 return () => clearInterval(interval);
     }
+
 setShowQuestion(true);
   }, [currentExercise]);
+
 const checkAnswer = () => {
     if (
       answer.trim().toLowerCase() ===
@@ -172,23 +221,30 @@ const checkAnswer = () => {
       setFeedback(`Bonne réponse : ${currentExercise.answer}`);
     }
   };
+
 const nextExercise = () => {
     const nextIndex = exerciseIndex + 1;
     const nextLevel = Math.floor(nextIndex / 10) + 1;
+
 setExerciseIndex(nextIndex);
     setLevel(nextLevel);
     setAnswer("");
     setFeedback("");
+
 setCurrentExercise(generateExercise(nextLevel, profil));
   };
+
 const progress = ((exerciseIndex % 10) / 10) * 100;
+
 return (
     <div className="page-container">
       <div className="main-card fade-in">
         <h1 className="main-title">Exercices {profil}</h1>
+
 <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div className="level-box">Niveau {currentLevel}</div>
         </div>
+
 <div className="button-row" style={{ justifyContent: "center" }}>
           <button
             className="primary-button"
@@ -197,12 +253,14 @@ return (
             Police Dyslexie
           </button>
         </div>
+
 <div className="progress-container">
           <div
             className="progress-bar"
             style={{ width: `${progress}%` }}
           />
         </div>
+
 <div
           className={`exercise-box ${
             dyslexiaFont ? "dyslexia-font" : ""
@@ -211,16 +269,34 @@ return (
           <p className="exercise-label">
             {currentExercise.instruction}
           </p>
+
+{currentExercise.image && (
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <img
+                src={currentExercise.image}
+                alt="illustration"
+                style={{
+                  width: "220px",
+                  height: "220px",
+                  objectFit: "cover",
+                  borderRadius: "20px",
+                }}
+              />
+            </div>
+          )}
+
 <h2 className="exercise-question easy-reading">
             {showQuestion
               ? currentExercise.question
               : "Quels étaient les mots affichés ?"}
           </h2>
+
 {currentExercise.type === "memoire" && showQuestion && (
             <div className="timer-box">
               Disparition dans : {timer}s
             </div>
           )}
+
 <input
             type="text"
             value={answer}
@@ -229,10 +305,12 @@ return (
             className="exercise-input"
           />
         </div>
+
 <div className="button-row">
           <button className="primary-button" onClick={checkAnswer}>
             Vérifier
           </button>
+
 <button
             className="primary-button success-button"
             onClick={nextExercise}
@@ -240,9 +318,11 @@ return (
             Exercice suivant
           </button>
         </div>
+
 <div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
+
 <div className="score-box">
           Score : {score} / ∞
         </div>
