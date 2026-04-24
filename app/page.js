@@ -1,6 +1,3 @@
-# app/profil/page.js
-
-```jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -159,15 +156,3 @@ Ajoute ce bloc tout en bas de ton fichier `globals.css`.
     grid-template-columns: 1fr;
   }
 }
-```
-
----
-
-# Résultat
-
-* Profil IA premium
-* Interface médicale moderne
-* Lecture facile AVC / Dys
-* Responsive mobile
-* Compatible avec ton système actuel
-* Design professionnel type clinique cogn
