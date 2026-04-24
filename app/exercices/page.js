@@ -394,8 +394,3 @@ function ExercisesContent() {
 
 export default function ExercisesPage() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
-      <ExercisesContent />
-    </Suspense>
-  );
-}
