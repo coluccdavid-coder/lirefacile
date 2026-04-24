@@ -156,40 +156,40 @@ function generateExercise(level, profil) {
   // ====================
   // AUTISME
   // ====================
-  if (profil === "Autisme") {
-    const routines = [
-      {
-        q: "Que fais-tu après le réveil ?",
-        a: "petit déjeuner",
-        img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
-      },
-      {
-        q: "Quelle couleur a le ciel ?",
-        a: "bleu",
-        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-      },
-      {
-        q: "Que fais-tu avant de dormir ?",
-        a: "se brosser les dents",
-        img: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2",
-      },
-      {
-        q: "Que mets-tu pour dormir ?",
-        a: "pyjama",
-        img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-      },
-    ];
+ if (profil === "Autisme") {
+  const routines = [
+    {
+      q: "Que fais-tu après le réveil ?",
+      a: "petit déjeuner",
+      img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
+    },
+    {
+      q: "Quelle couleur a le ciel ?",
+      a: "bleu",
+      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    },
+    {
+      q: "Que fais-tu avant de dormir ?",
+      a: "se brosser les dents",
+      img: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04",
+    },
+    {
+      q: "Que mets-tu pour dormir ?",
+      a: "pyjama",
+      img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
+    },
+  ];
 
-    const routine = randomItem(routines);
+  const routine = randomItem(routines);
 
-    return {
-      type: "routine",
-      instruction: "Observe puis réponds :",
-      question: routine.q,
-      answer: routine.a,
-      image: routine.img,
-    };
-  }
+  return {
+    type: "routine",
+    instruction: "Observe puis réponds :",
+    question: routine.q,
+    answer: routine.a,
+    image: routine.img,
+  };
+}
 
   // ====================
   // MÉMOIRE
