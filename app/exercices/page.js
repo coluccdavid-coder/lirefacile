@@ -1,3 +1,4 @@
+```jsx
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -7,7 +8,7 @@ function ExercisesContent() {
   const searchParams = useSearchParams();
   const profil = searchParams.get("profil") || "AVC";
 
-const [exerciseIndex, setExerciseIndex] = useState(0);
+  const [exerciseIndex, setExerciseIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -16,9 +17,9 @@ const [exerciseIndex, setExerciseIndex] = useState(0);
   const [timer, setTimer] = useState(10);
   const [level, setLevel] = useState(1);
 
-const currentLevel = Math.floor(exerciseIndex / 10) + 1;
+  const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
-const words = [
+  const words = [
     "maison",
     "voiture",
     "chat",
@@ -41,16 +42,16 @@ const words = [
     "forêt",
   ];
 
-function randomItem(array) {
+  function randomItem(array) {
     return array[Math.floor(Math.random() * array.length)];
   }
 
-function generateMath(level) {
+  function generateMath(level) {
     const max = level * 10;
     const a = Math.floor(Math.random() * max);
     const b = Math.floor(Math.random() * max);
 
-return {
+    return {
       type: "math",
       instruction: "Résous le calcul :",
       question: `${a} + ${b} = ?`,
@@ -59,18 +60,18 @@ return {
     };
   }
 
-function generateExercise(level, profil) {
+  function generateExercise(level, profil) {
     const randomWord = randomItem(words);
 
-const image = `https://source.unsplash.com/400x400/?${encodeURIComponent(
+    const image = `https://picsum.photos/seed/${encodeURIComponent(
       randomWord
-    )}`;
+    )}/400/400`;
 
-if (profil === "AVC") {
+    if (profil === "AVC") {
       const types = ["mot", "phrase", "memoire"];
       const selected = randomItem(types);
 
-if (selected === "mot") {
+      if (selected === "mot") {
         return {
           type: "mot",
           instruction: "Complète le mot :",
@@ -80,7 +81,7 @@ if (selected === "mot") {
         };
       }
 
-if (selected === "phrase") {
+      if (selected === "phrase") {
         return {
           type: "phrase",
           instruction: "Complète la phrase :",
@@ -90,11 +91,11 @@ if (selected === "phrase") {
         };
       }
 
-const memoryWords = [...words]
+      const memoryWords = [...words]
         .sort(() => 0.5 - Math.random())
         .slice(0, Math.min(level + 2, 6));
 
-return {
+      return {
         type: "memoire",
         instruction: "Mémorise les mots :",
         question: memoryWords.join(", "),
@@ -103,7 +104,7 @@ return {
       };
     }
 
-if (profil === "Dyslexie") {
+    if (profil === "Dyslexie") {
       return {
         type: "lecture",
         instruction: "Écris correctement le mot :",
@@ -113,7 +114,7 @@ if (profil === "Dyslexie") {
       };
     }
 
-if (profil === "Autisme") {
+    if (profil === "Autisme") {
       const routines = [
         {
           q: "Que fais-tu après le réveil ?",
@@ -129,9 +130,9 @@ if (profil === "Autisme") {
         },
       ];
 
-const routine = randomItem(routines);
+      const routine = randomItem(routines);
 
-return {
+      return {
         type: "routine",
         instruction: "Réponds simplement :",
         question: routine.q,
@@ -140,12 +141,12 @@ return {
       };
     }
 
-if (profil === "Mémoire") {
+    if (profil === "Mémoire") {
       const memoryWords = [...words]
         .sort(() => 0.5 - Math.random())
         .slice(0, Math.min(level + 3, 8));
 
-return {
+      return {
         type: "memoire",
         instruction: "Observe et mémorise :",
         question: memoryWords.join(", "),
@@ -154,10 +155,10 @@ return {
       };
     }
 
-if (profil === "Concentration") {
+    if (profil === "Concentration") {
       const numbers = [2, 4, 6, 8, 10];
 
-return {
+      return {
         type: "attention",
         instruction: "Trouve le nombre suivant :",
         question: `${numbers.join(", ")}, ___`,
@@ -166,11 +167,11 @@ return {
       };
     }
 
-if (profil === "Math") {
+    if (profil === "Math") {
       return generateMath(level);
     }
 
-return {
+    return {
       type: "mot",
       instruction: "Écris le mot :",
       question: randomWord,
@@ -179,20 +180,20 @@ return {
     };
   }
 
-const [currentExercise, setCurrentExercise] = useState(
+  const [currentExercise, setCurrentExercise] = useState(
     generateExercise(1, profil)
   );
 
-useEffect(() => {
+  useEffect(() => {
     setCurrentExercise(generateExercise(level, profil));
   }, [profil]);
 
-useEffect(() => {
+  useEffect(() => {
     if (currentExercise.type === "memoire") {
       setShowQuestion(true);
       setTimer(10);
 
-const interval = setInterval(() => {
+      const interval = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
@@ -200,17 +201,17 @@ const interval = setInterval(() => {
             return 0;
           }
 
-return prev - 1;
+          return prev - 1;
         });
       }, 1000);
 
-return () => clearInterval(interval);
+      return () => clearInterval(interval);
     }
 
-setShowQuestion(true);
+    setShowQuestion(true);
   }, [currentExercise]);
 
-const checkAnswer = () => {
+  const checkAnswer = () => {
     if (
       answer.trim().toLowerCase() ===
       currentExercise.answer.toLowerCase()
@@ -222,30 +223,30 @@ const checkAnswer = () => {
     }
   };
 
-const nextExercise = () => {
+  const nextExercise = () => {
     const nextIndex = exerciseIndex + 1;
     const nextLevel = Math.floor(nextIndex / 10) + 1;
 
-setExerciseIndex(nextIndex);
+    setExerciseIndex(nextIndex);
     setLevel(nextLevel);
     setAnswer("");
     setFeedback("");
 
-setCurrentExercise(generateExercise(nextLevel, profil));
+    setCurrentExercise(generateExercise(nextLevel, profil));
   };
 
-const progress = ((exerciseIndex % 10) / 10) * 100;
+  const progress = ((exerciseIndex % 10) / 10) * 100;
 
-return (
+  return (
     <div className="page-container">
       <div className="main-card fade-in">
         <h1 className="main-title">Exercices {profil}</h1>
 
-<div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div className="level-box">Niveau {currentLevel}</div>
         </div>
 
-<div className="button-row" style={{ justifyContent: "center" }}>
+        <div className="button-row" style={{ justifyContent: "center" }}>
           <button
             className="primary-button"
             onClick={() => setDyslexiaFont(!dyslexiaFont)}
@@ -254,14 +255,14 @@ return (
           </button>
         </div>
 
-<div className="progress-container">
+        <div className="progress-container">
           <div
             className="progress-bar"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-<div
+        <div
           className={`exercise-box ${
             dyslexiaFont ? "dyslexia-font" : ""
           }`}
@@ -270,7 +271,7 @@ return (
             {currentExercise.instruction}
           </p>
 
-{currentExercise.image && (
+          {currentExercise.image && (
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
               <img
                 src={currentExercise.image}
@@ -285,19 +286,19 @@ return (
             </div>
           )}
 
-<h2 className="exercise-question easy-reading">
+          <h2 className="exercise-question easy-reading">
             {showQuestion
               ? currentExercise.question
               : "Quels étaient les mots affichés ?"}
           </h2>
 
-{currentExercise.type === "memoire" && showQuestion && (
+          {currentExercise.type === "memoire" && showQuestion && (
             <div className="timer-box">
               Disparition dans : {timer}s
             </div>
           )}
 
-<input
+          <input
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
@@ -306,12 +307,12 @@ return (
           />
         </div>
 
-<div className="button-row">
+        <div className="button-row">
           <button className="primary-button" onClick={checkAnswer}>
             Vérifier
           </button>
 
-<button
+          <button
             className="primary-button success-button"
             onClick={nextExercise}
           >
@@ -319,11 +320,11 @@ return (
           </button>
         </div>
 
-<div className="feedback-box">
+        <div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
 
-<div className="score-box">
+        <div className="score-box">
           Score : {score} / ∞
         </div>
       </div>
@@ -338,3 +339,4 @@ export default function ExercisesPage() {
     </Suspense>
   );
 }
+```
