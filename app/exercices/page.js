@@ -62,9 +62,9 @@ function ExercisesContent() {
   function generateExercise(level, profil) {
     const randomWord = randomItem(words);
 
-    const image = `https://picsum.photos/seed/${encodeURIComponent(
-      randomWord
-    )}/400/400`;
+const image = `https://loremflickr.com/400/400/${encodeURIComponent(
+  randomWord
+)}`;
 
     if (profil === "AVC") {
       const types = ["mot", "phrase", "memoire"];
