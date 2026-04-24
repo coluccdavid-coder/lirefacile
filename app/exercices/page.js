@@ -204,7 +204,17 @@ if (profil === "Autisme") {
     {
       q: "Que fais-tu avant de dormir ?",
       a: "se brosser les dents",
-      img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9",
+      img: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2",
+    },
+    {
+      q: "Que fais-tu pour te laver ?",
+      a: "prendre une douche",
+      img: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1",
+    },
+    {
+      q: "Que mets-tu pour dormir ?",
+      a: "pyjama",
+      img: "https://images.unsplash.com/photo-1517841905240-472988babdf9",
     },
   ];
 
@@ -212,13 +222,12 @@ if (profil === "Autisme") {
 
   return {
     type: "routine",
-    instruction: "Réponds simplement :",
+    instruction: "Observe l'image puis réponds :",
     question: routine.q,
     answer: routine.a,
     image: routine.img,
   };
 }
-
   // ======================
   // MÉMOIRE
   // ======================
