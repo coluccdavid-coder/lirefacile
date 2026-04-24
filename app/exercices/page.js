@@ -253,21 +253,38 @@ function ExercisesContent() {
       .replace(/\s+/g, " ");
   };
 
-  const checkAnswer = () => {
-    const userAnswer = normalizeText(answer);
-    const correctAnswer = normalizeText(currentExercise.answer);
+ const normalizeText = (text) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ");
+};
 
-    if (userAnswer === correctAnswer) {
-      setScore((prev) => prev + 1);
-      setFeedback("Bonne réponse 👍");
+const checkAnswer = () => {
+  const userAnswer = normalizeText(answer);
+  const correctAnswer = normalizeText(currentExercise.answer);
 
-      if ((score + 1) % 5 === 0) {
-        setDifficulty((prev) => prev + 1);
-      }
-    } else {
-      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-      setErrorCount((prev) => prev + 1);
+  // Empêche validation vide
+  if (!userAnswer) {
+    setFeedback("Écris une réponse");
+    return;
+  }
+
+  const isCorrect = userAnswer === correctAnswer;
+
+  if (isCorrect) {
+    setScore((prev) => prev + 1);
+    setFeedback("Bonne réponse 👍");
+
+    if ((score + 1) % 5 === 0) {
+      setDifficulty((prev) => prev + 1);
     }
+  } else {
+    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+    setErrorCount((prev) => prev + 1);
+  }
   };
 
   const nextExercise = () => {
