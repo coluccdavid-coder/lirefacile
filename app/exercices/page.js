@@ -430,7 +430,6 @@ const checkAnswer = () => {
       </div>
     </div>
   );
-}
 
 export default function ExercisesPage() {
   return (
