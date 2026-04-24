@@ -244,40 +244,37 @@ function ExercisesContent() {
     }
   }, [errorCount]);
 
-   };
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, " ");
+  };
 
- const normalizeText = (text) => {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/\s+/g, " ");
-};
+  const checkAnswer = () => {
+    const userAnswer = normalizeText(answer);
+    const correctAnswer = normalizeText(currentExercise.answer);
 
-const checkAnswer = () => {
-  const userAnswer = normalizeText(answer);
-  const correctAnswer = normalizeText(currentExercise.answer);
-
-  // Empêche validation vide
-  if (!userAnswer) {
-    setFeedback("Écris une réponse");
-    return;
-  }
-
-  const isCorrect = userAnswer === correctAnswer;
-
-  if (isCorrect) {
-    setScore((prev) => prev + 1);
-    setFeedback("Bonne réponse 👍");
-
-    if ((score + 1) % 5 === 0) {
-      setDifficulty((prev) => prev + 1);
+    if (!userAnswer) {
+      setFeedback("Écris une réponse");
+      return;
     }
-  } else {
-    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-    setErrorCount((prev) => prev + 1);
-  }
+
+    const isCorrect = userAnswer === correctAnswer;
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      setFeedback("Bonne réponse 👍");
+
+      if ((score + 1) % 5 === 0) {
+        setDifficulty((prev) => prev + 1);
+      }
+    } else {
+      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+      setErrorCount((prev) => prev + 1);
+    }
   };
 
   const nextExercise = () => {
@@ -398,13 +395,13 @@ const checkAnswer = () => {
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={(e) => {
-            if (e.key === "Enter") {
-      checkAnswer();
-    }
-  }}
-  placeholder="Écris ta réponse"
-  className="exercise-input"
-/>
+              if (e.key === "Enter") {
+                checkAnswer();
+              }
+            }}
+            placeholder="Écris ta réponse"
+            className="exercise-input"
+          />
         </div>
 
         <div className="button-row">
@@ -430,6 +427,7 @@ const checkAnswer = () => {
       </div>
     </div>
   );
+}
 
 export default function ExercisesPage() {
   return (
