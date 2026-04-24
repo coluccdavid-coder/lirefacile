@@ -17,9 +17,14 @@ function ExercisesContent() {
   const [badge, setBadge] = useState(null);
   const [lastQuestions, setLastQuestions] = useState([]);
   const [startTime, setStartTime] = useState(Date.now());
+
   const [assistantMessage, setAssistantMessage] = useState(
     "Bonjour 👋 Je vais t'aider aujourd'hui."
   );
+
+  const [assistantMood, setAssistantMood] = useState("🧠");
+  const [confidence, setConfidence] = useState(50);
+  const [brainProgress, setBrainProgress] = useState(0);
 
   const [cognitiveProfile, setCognitiveProfile] = useState({
     memory: 50,
@@ -38,14 +43,14 @@ function ExercisesContent() {
     AVC: {
       1: [
         {
-          q: "Je vois un _____",
-          a: "chat",
-          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
-        },
-        {
           q: "Je mange une _____",
           a: "pomme",
           img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+        },
+        {
+          q: "Je vois un _____",
+          a: "chat",
+          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
         },
       ],
       2: [
@@ -169,6 +174,16 @@ function ExercisesContent() {
       .replace(/[\u0300-\u036f]/g, "")
       .trim();
 
+  const speakAssistant = (text) => {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "fr-FR";
+    speech.rate = 0.92;
+    speech.pitch = 1;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+  };
+
   const checkAnswer = () => {
     if (!currentExercise) return;
 
@@ -199,30 +214,77 @@ function ExercisesContent() {
       .slice(-5)
       .filter((x) => !x.correct || x.responseTime > 12).length;
 
+    const recentCorrect = savedAnalytics
+      .slice(-10)
+      .filter((x) => x.correct).length;
+
+    const successRate = recentCorrect / 10;
+
+    setBrainProgress(Math.min((score + 1) * 2, 100));
+
     setCognitiveProfile((prev) => ({
       ...prev,
       fatigue: fatigue * 10,
     }));
 
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setXp((prev) => prev + 10);
-      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
-      setAssistantMessage(
-        "Bravo 🎉 Continue comme ça, tu progresses bien."
-      );
+    if (fatigue >= 4) {
+      const msg = "Tu sembles fatigué. Fais une pause 🧘";
 
-      if (score + 1 === 10) setBadge("🌟 Débutant");
-      if (score + 1 === 25) setBadge("🏆 Expert");
-      if (score + 1 === 50) setBadge("👑 Maître Cognitif");
+      setAssistantMood("😴");
+      setAssistantMessage(msg);
+      setFeedback(msg);
+      speakAssistant(msg);
+
+      return;
+    }
+
+    if (isCorrect) {
+      const newScore = score + 1;
+
+      setScore(newScore);
+      setXp((prev) => prev + 10);
+      setConfidence((prev) => Math.min(prev + 3, 100));
+
+      let msg = "Bravo 🎉 Continue comme ça.";
+
+      setAssistantMood("🎉");
+
+      if (successRate > 0.8) {
+        msg = "Excellent travail. Tu progresses rapidement.";
+        setDifficulty((prev) => Math.min(prev + 1, 5));
+      }
+
+      if (newScore % 5 === 0) {
+        msg = "Très bon travail. Tu montes de niveau.";
+      }
+
+      if (newScore === 10) setBadge("🌟 Débutant");
+      if (newScore === 25) setBadge("🏆 Expert");
+      if (newScore === 50) setBadge("👑 Maître Cognitif");
+
+      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
+      setAssistantMessage(msg);
+      speakAssistant(msg);
     } else {
+      setConfidence((prev) => Math.max(prev - 2, 0));
+      setAssistantMood("🤗");
+
+      let hint = "Observe bien l'image et réessaie.";
+
+      if (responseTime > 10) {
+        hint = "Prends ton temps. Tu peux réussir.";
+      }
+
       setFeedback(
         `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
       );
 
-      setAssistantMessage(
-        "Ce n'est pas grave 👍 Observe bien l'image et réessaie."
-      );
+      setAssistantMessage(hint);
+      speakAssistant(hint);
+
+      if (difficulty > 1) {
+        setDifficulty((prev) => Math.max(prev - 1, 1));
+      }
     }
   };
 
@@ -238,7 +300,7 @@ function ExercisesContent() {
 
   return (
     <div className="page-container">
-      <div className="main-card">
+      <div className="main-card fade-in">
         <h1 className="main-title">Exercices {profil}</h1>
 
         <div className="progress-container">
@@ -249,7 +311,9 @@ function ExercisesContent() {
         </div>
 
         <div className="assistant-box">
-          <div className="assistant-avatar">🧠</div>
+          <div className="assistant-avatar">
+            {assistantMood}
+          </div>
 
           <div className="assistant-message">
             {assistantMessage}
@@ -274,7 +338,9 @@ function ExercisesContent() {
             </div>
           )}
 
-          <h2>{currentExercise.question}</h2>
+          <h2 className="exercise-question">
+            {currentExercise.question}
+          </h2>
 
           <input
             type="text"
@@ -291,8 +357,13 @@ function ExercisesContent() {
         </div>
 
         <div className="button-row">
-          <button onClick={checkAnswer}>Vérifier</button>
-          <button onClick={nextExercise}>Suivant</button>
+          <button className="primary-button" onClick={checkAnswer}>
+            Vérifier
+          </button>
+
+          <button className="primary-button success-button" onClick={nextExercise}>
+            Suivant
+          </button>
         </div>
 
         <div className="feedback-box">
@@ -303,8 +374,16 @@ function ExercisesContent() {
           Score : {score} | XP : {xp} | Niveau : {currentLevel}
         </div>
 
-        <div className="score-box">
-          Fatigue : {cognitiveProfile.fatigue}%
+        <div className="fatigue-box">
+          🧠 Progression cognitive : {brainProgress}%
+        </div>
+
+        <div className="fatigue-box">
+          💪 Confiance : {confidence}%
+        </div>
+
+        <div className="fatigue-box">
+          😴 Fatigue : {cognitiveProfile.fatigue}%
         </div>
 
         {badge && <div className="badge-box">{badge}</div>}
