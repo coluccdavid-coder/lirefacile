@@ -14,7 +14,8 @@ function ExercisesContent() {
   const [dyslexiaFont, setDyslexiaFont] = useState(false);
   const [showQuestion, setShowQuestion] = useState(true);
   const [timer, setTimer] = useState(10);
-  const [level, setLevel] = useState(1);
+  const [difficulty, setDifficulty] = useState(1);
+  const [errorCount, setErrorCount] = useState(0);
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -62,9 +63,11 @@ function ExercisesContent() {
   function generateExercise(level, profil) {
     const randomWord = randomItem(words);
 
-const image = `https://loremflickr.com/400/400/${encodeURIComponent(
-  randomWord
-)}`;
+    const image = `https://loremflickr.com/400/400/${encodeURIComponent(
+      randomWord
+    )}`;
+
+    const adjustedLevel = level + difficulty;
 
     if (profil === "AVC") {
       const types = ["mot", "phrase", "memoire"];
@@ -92,7 +95,7 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
 
       const memoryWords = [...words]
         .sort(() => 0.5 - Math.random())
-        .slice(0, Math.min(level + 2, 6));
+        .slice(0, Math.min(adjustedLevel + 2, 6));
 
       return {
         type: "memoire",
@@ -143,7 +146,7 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
     if (profil === "Mémoire") {
       const memoryWords = [...words]
         .sort(() => 0.5 - Math.random())
-        .slice(0, Math.min(level + 3, 8));
+        .slice(0, Math.min(adjustedLevel + 3, 8));
 
       return {
         type: "memoire",
@@ -155,19 +158,17 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
     }
 
     if (profil === "Concentration") {
-      const numbers = [2, 4, 6, 8, 10];
-
       return {
         type: "attention",
         instruction: "Trouve le nombre suivant :",
-        question: `${numbers.join(", ")}, ___`,
-        answer: "12",
+        question: "2, 4, 6, 8, ___",
+        answer: "10",
         image,
       };
     }
 
     if (profil === "Math") {
-      return generateMath(level);
+      return generateMath(adjustedLevel);
     }
 
     return {
@@ -179,15 +180,37 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
     };
   }
 
-  const [currentExercise, setCurrentExercise] = useState(
-    generateExercise(1, profil)
-  );
+  const [currentExercise, setCurrentExercise] = useState(null);
 
   useEffect(() => {
-    setCurrentExercise(generateExercise(level, profil));
-  }, [profil]);
+    const saved = localStorage.getItem("lirefacile-progress");
+
+    if (saved) {
+      const data = JSON.parse(saved);
+
+      setScore(data.score || 0);
+      setExerciseIndex(data.exerciseIndex || 0);
+    }
+  }, []);
 
   useEffect(() => {
+    setCurrentExercise(generateExercise(currentLevel, profil));
+  }, [exerciseIndex, profil]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "lirefacile-progress",
+      JSON.stringify({
+        score,
+        exerciseIndex,
+        profil,
+      })
+    );
+  }, [score, exerciseIndex, profil]);
+
+  useEffect(() => {
+    if (!currentExercise) return;
+
     if (currentExercise.type === "memoire") {
       setShowQuestion(true);
       setTimer(10);
@@ -210,40 +233,76 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
     setShowQuestion(true);
   }, [currentExercise]);
 
+  useEffect(() => {
+    if (errorCount >= 3) {
+      setFeedback(
+        "On ralentit un peu pour rendre l'exercice plus simple 🧠"
+      );
+
+      setDifficulty((prev) => Math.max(1, prev - 1));
+      setErrorCount(0);
+    }
+  }, [errorCount]);
+
   const normalizeText = (text) => {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/\s+/g, " ");
-};
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, " ");
+  };
 
-const checkAnswer = () => {
-  const userAnswer = normalizeText(answer);
-  const correctAnswer = normalizeText(currentExercise.answer);
+  const checkAnswer = () => {
+    const userAnswer = normalizeText(answer);
+    const correctAnswer = normalizeText(currentExercise.answer);
 
-  if (userAnswer === correctAnswer) {
-    setScore((prev) => prev + 1);
-    setFeedback("Bonne réponse 👍");
-  } else {
-    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-  }
+    if (userAnswer === correctAnswer) {
+      setScore((prev) => prev + 1);
+      setFeedback("Bonne réponse 👍");
+
+      if ((score + 1) % 5 === 0) {
+        setDifficulty((prev) => prev + 1);
+      }
+    } else {
+      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+      setErrorCount((prev) => prev + 1);
+    }
   };
 
   const nextExercise = () => {
-    const nextIndex = exerciseIndex + 1;
-    const nextLevel = Math.floor(nextIndex / 10) + 1;
-
-    setExerciseIndex(nextIndex);
-    setLevel(nextLevel);
+    setExerciseIndex((prev) => prev + 1);
     setAnswer("");
     setFeedback("");
+  };
 
-    setCurrentExercise(generateExercise(nextLevel, profil));
+  const speakText = (text) => {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "fr-FR";
+    speech.rate = 0.85;
+    window.speechSynthesis.speak(speech);
+  };
+
+  const startVoiceRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "fr-FR";
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setAnswer(transcript);
+    };
   };
 
   const progress = ((exerciseIndex % 10) / 10) * 100;
+
+  if (!currentExercise) return null;
 
   return (
     <div className="page-container">
@@ -260,6 +319,24 @@ const checkAnswer = () => {
             onClick={() => setDyslexiaFont(!dyslexiaFont)}
           >
             Police Dyslexie
+          </button>
+
+          <button
+            className="primary-button"
+            onClick={() =>
+              speakText(
+                `${currentExercise.instruction} ${currentExercise.question}`
+              )
+            }
+          >
+            Lire 🔊
+          </button>
+
+          <button
+            className="primary-button"
+            onClick={startVoiceRecognition}
+          >
+            Répondre 🎤
           </button>
         </div>
 
@@ -333,7 +410,7 @@ const checkAnswer = () => {
         </div>
 
         <div className="score-box">
-          Score : {score} / ∞
+          Score : {score} | Difficulté : {difficulty}
         </div>
       </div>
     </div>
