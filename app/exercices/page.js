@@ -1,6 +1,5 @@
 "use client";
-  }
-
+  
   return (
     <div className="page-container">
       <div className="main-card">
