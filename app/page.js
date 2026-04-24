@@ -7,15 +7,25 @@ export default function ProfilPage() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("evaluation"));
+    const stored = localStorage.getItem("evaluation");
 
-    if (!data) return;
+    if (!stored) {
+      setProfile({
+        memory: 50,
+        attention: 50,
+        dyslexiaRisk: 50,
+        reading: 50,
+      });
+      return;
+    }
+
+    const data = JSON.parse(stored);
 
     const cognitiveProfile = {
       memory: data.memory ? 70 : 40,
       attention: data.attention ? 60 : 80,
       dyslexiaRisk: data.dyslexia ? 80 : 20,
-      reading: data.reading ? 55 : 85
+      reading: data.reading ? 55 : 85,
     };
 
     setProfile(cognitiveProfile);
