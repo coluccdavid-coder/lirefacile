@@ -388,10 +388,6 @@ useEffect(() => {
         correctAnswer.includes(userAnswer) ||
         userAnswer.includes(correctAnswer)
       );
-        userAnswer === correctAnswer ||
-        correctAnswer.includes(userAnswer) ||
-        userAnswer.includes(correctAnswer)
-      );
 
 if (isCorrect) {
   setScore((prev) => prev + 1);
