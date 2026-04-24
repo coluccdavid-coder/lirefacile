@@ -1,13 +1,10 @@
 "use client";
-
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-
 function ExercisesContent() {
   const searchParams = useSearchParams();
   const profil = searchParams.get("profil") || "AVC";
-
-  const [exerciseIndex, setExerciseIndex] = useState(0);
+const [exerciseIndex, setExerciseIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -15,315 +12,163 @@ function ExercisesContent() {
   const [currentExercise, setCurrentExercise] = useState(null);
   const [xp, setXp] = useState(0);
   const [badge, setBadge] = useState(null);
-  const [lastQuestions, setLastQuestions] = useState([]);
   const [startTime, setStartTime] = useState(Date.now());
-
-  const [assistantMessage, setAssistantMessage] = useState(
+const [assistantMessage, setAssistantMessage] = useState(
     "Bonjour 👋 Je vais t'aider aujourd'hui."
   );
-
-  const [assistantMood, setAssistantMood] = useState("🧠");
+const [assistantMood, setAssistantMood] = useState("🧠");
   const [confidence, setConfidence] = useState(50);
   const [brainProgress, setBrainProgress] = useState(0);
-
-  const [cognitiveProfile, setCognitiveProfile] = useState({
-    memory: 50,
-    attention: 50,
-    language: 50,
+const [lastQuestions, setLastQuestions] = useState([]);
+const [cognitiveProfile, setCognitiveProfile] = useState({
     fatigue: 0,
-    confidence: 50,
   });
-
-  const currentLevel = Math.floor(exerciseIndex / 10) + 1;
-
-  const randomItem = (array) =>
-    array[Math.floor(Math.random() * array.length)];
-
-  const exercises = {
-    AVC: {
-      1: [
-        {
-          q: "Je mange une _____",
-          a: "pomme",
-          img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
-        },
-        {
-          q: "Je vois un _____",
-          a: "chat",
-          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
-        },
-      ],
-      2: [
-        {
-          q: "Le chat dort sur le _____",
-          a: "lit",
-          img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-        },
-      ],
-      3: [
-        {
-          q: "Le garçon joue avec un _____ dans le jardin",
-          a: "ballon",
-          img: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68",
-        },
-      ],
-      4: [
-        {
-          q: "Chaque matin je prends un café avant d'aller au _____",
-          a: "travail",
-          img: "https://images.unsplash.com/photo-1521791136064-7986c2920216",
-        },
-      ],
-      5: [
-        {
-          q: "Après le repas je range les assiettes dans le _____",
-          a: "placard",
-          img: "https://images.unsplash.com/photo-1556911220-bff31c812dba",
-        },
-      ],
-    },
-
-    Dyslexie: {
-      1: [{ q: "chat", a: "chat" }],
-      2: [{ q: "maison", a: "maison" }],
-      3: [{ q: "ordinateur", a: "ordinateur" }],
-      4: [{ q: "Le chat dort", a: "chat" }],
-      5: [{ q: "Le garçon joue dans le jardin", a: "garçon" }],
-    },
-
-    Mémoire: {
-      1: [{ q: "chat maison", a: "chat maison" }],
-      2: [{ q: "chat maison livre", a: "chat maison livre" }],
-      3: [{ q: "chat maison livre soleil", a: "chat maison livre soleil" }],
-      4: [{ q: "chat maison livre soleil voiture", a: "chat maison livre soleil voiture" }],
-      5: [{ q: "chat maison livre soleil voiture jardin", a: "chat maison livre soleil voiture jardin" }],
-    },
-
-    Concentration: {
-      1: [{ q: "2, 4, 6, ___", a: "8" }],
-      2: [{ q: "5, 10, 15, ___", a: "20" }],
-      3: [{ q: "1, 3, 5, 7, ___", a: "9" }],
-      4: [{ q: "10, 20, 30, 40, ___", a: "50" }],
-      5: [{ q: "3, 6, 12, 24, ___", a: "48" }],
-    },
-
-    Math: {
-      1: [{ q: "2 + 3", a: "5" }],
-      2: [{ q: "8 + 7", a: "15" }],
-      3: [{ q: "12 - 5", a: "7" }],
-      4: [{ q: "6 × 7", a: "42" }],
-      5: [{ q: "45 ÷ 5", a: "9" }],
-    },
-  };
-
-  function generateExercise(level, profil) {
-    const safeLevel = Math.min(level + difficulty - 1, 5);
-
-    const profileExercises = exercises[profil] || exercises.AVC;
-    const levelExercises = profileExercises[safeLevel];
-
-    const selected = randomItem(levelExercises);
-
-    return {
-      instruction:
-        profil === "AVC"
-          ? "Complète la phrase"
-          : profil === "Dyslexie"
-          ? "Lis puis écris"
-          : profil === "Mémoire"
-          ? "Mémorise"
-          : profil === "Math"
-          ? "Résous le calcul"
-          : "Réponds",
-      question: selected.q,
-      answer: selected.a,
-      image: selected.img || null,
-    };
-  }
-
-  useEffect(() => {
-    let newExercise;
-    let attempts = 0;
-
-    do {
-      newExercise = generateExercise(currentLevel, profil);
-      attempts++;
-    } while (
-      lastQuestions.includes(newExercise.question) &&
-      attempts < 30
-    );
-
-    setCurrentExercise(newExercise);
-    setStartTime(Date.now());
-
-    setLastQuestions((prev) => {
-      const updated = [...prev, newExercise.question];
-
-      if (updated.length > 20) {
-        updated.shift();
-      }
-
-      return updated;
-    });
-  }, [exerciseIndex, profil, difficulty]);
-
-  const normalizeText = (text) =>
+const currentLevel = Math.floor(exerciseIndex / 10) + 1;
+const normalizeText = (text) =>
     text
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim();
-
-  const speakAssistant = (text) => {
+const speakAssistant = (text) => {
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = "fr-FR";
     speech.rate = 0.92;
-    speech.pitch = 1;
-
-    window.speechSynthesis.cancel();
+window.speechSynthesis.cancel();
     window.speechSynthesis.speak(speech);
   };
-
-  const checkAnswer = () => {
+const fetchExercise = async (retry = 0) => {
+    try {
+      const response = await fetch("/api/exercise", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          profil,
+          level: currentLevel,
+          difficulty,
+          history: lastQuestions,
+        }),
+      });
+const data = await response.json();
+const normalizedQuestion = normalizeText(data.question);
+const isDuplicate = lastQuestions.some(
+        (q) => normalizeText(q) === normalizedQuestion
+      );
+if (isDuplicate && retry < 5) {
+        return fetchExercise(retry + 1);
+      }
+setCurrentExercise({
+        instruction: data.instruction,
+        question: data.question,
+        answer: data.answer,
+        image: data.image || null,
+      });
+setStartTime(Date.now());
+setLastQuestions((prev) => {
+        const updated = [...prev, data.question];
+if (updated.length > 100) {
+          updated.shift();
+        }
+return updated;
+      });
+    } catch (error) {
+      console.error("Erreur exercice IA", error);
+    }
+  };
+useEffect(() => {
+    fetchExercise();
+  }, [exerciseIndex, profil, difficulty]);
+const checkAnswer = () => {
     if (!currentExercise) return;
-
-    const responseTime = Math.floor((Date.now() - startTime) / 1000);
-
-    const userAnswer = normalizeText(answer);
+const responseTime = Math.floor((Date.now() - startTime) / 1000);
+const userAnswer = normalizeText(answer);
     const correctAnswer = normalizeText(currentExercise.answer);
-
-    const isCorrect = userAnswer === correctAnswer;
-
-    const savedAnalytics =
+const isCorrect = userAnswer === correctAnswer;
+const savedAnalytics =
       JSON.parse(localStorage.getItem("analytics")) || [];
-
-    savedAnalytics.push({
+savedAnalytics.push({
       correct: isCorrect,
       responseTime,
-      difficulty,
       profil,
       timestamp: Date.now(),
     });
-
-    localStorage.setItem(
+localStorage.setItem(
       "analytics",
       JSON.stringify(savedAnalytics)
     );
-
-    const fatigue = savedAnalytics
+const fatigue = savedAnalytics
       .slice(-5)
       .filter((x) => !x.correct || x.responseTime > 12).length;
-
-    const recentCorrect = savedAnalytics
-      .slice(-10)
-      .filter((x) => x.correct).length;
-
-    const successRate = recentCorrect / 10;
-
-    setBrainProgress(Math.min((score + 1) * 2, 100));
-
-    setCognitiveProfile((prev) => ({
-      ...prev,
+setCognitiveProfile({
       fatigue: fatigue * 10,
-    }));
-
-    if (fatigue >= 4) {
-      const msg = "Tu sembles fatigué. Fais une pause 🧘";
-
-      setAssistantMood("😴");
-      setAssistantMessage(msg);
-      setFeedback(msg);
-      speakAssistant(msg);
-
-      return;
-    }
-
-    if (isCorrect) {
+    });
+if (isCorrect) {
       const newScore = score + 1;
-
-      setScore(newScore);
+setScore(newScore);
       setXp((prev) => prev + 10);
       setConfidence((prev) => Math.min(prev + 3, 100));
-
-      let msg = "Bravo 🎉 Continue comme ça.";
-
-      setAssistantMood("🎉");
-
-      if (successRate > 0.8) {
-        msg = "Excellent travail. Tu progresses rapidement.";
+      setBrainProgress(Math.min(newScore * 2, 100));
+let msg = "Bravo 🎉 Continue comme ça.";
+setAssistantMood("🎉");
+if (newScore % 5 === 0) {
+        msg = "Excellent travail. Tu progresses bien.";
         setDifficulty((prev) => Math.min(prev + 1, 5));
       }
-
-      if (newScore % 5 === 0) {
-        msg = "Très bon travail. Tu montes de niveau.";
-      }
-
-      if (newScore === 10) setBadge("🌟 Débutant");
+if (newScore === 10) setBadge("🌟 Débutant");
       if (newScore === 25) setBadge("🏆 Expert");
       if (newScore === 50) setBadge("👑 Maître Cognitif");
-
-      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
+setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
       setAssistantMessage(msg);
       speakAssistant(msg);
     } else {
       setConfidence((prev) => Math.max(prev - 2, 0));
       setAssistantMood("🤗");
-
-      let hint = "Observe bien l'image et réessaie.";
-
-      if (responseTime > 10) {
-        hint = "Prends ton temps. Tu peux réussir.";
+let msg = "Observe bien l'image et réessaie.";
+if (responseTime > 10) {
+        msg = "Prends ton temps. Tu peux réussir.";
       }
-
-      setFeedback(
+setFeedback(
         `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
       );
-
-      setAssistantMessage(hint);
-      speakAssistant(hint);
-
-      if (difficulty > 1) {
+setAssistantMessage(msg);
+      speakAssistant(msg);
+if (difficulty > 1) {
         setDifficulty((prev) => Math.max(prev - 1, 1));
       }
     }
   };
-
-  const nextExercise = () => {
+const nextExercise = () => {
     setExerciseIndex((prev) => prev + 1);
     setAnswer("");
     setFeedback("");
   };
-
-  const progress = ((exerciseIndex % 10) / 10) * 100;
-
-  if (!currentExercise) return null;
-
-  return (
+const progress = ((exerciseIndex % 10) / 10) * 100;
+if (!currentExercise) {
+    return <div className="page-container">Chargement...</div>;
+  }
+return (
     <div className="page-container">
       <div className="main-card fade-in">
         <h1 className="main-title">Exercices {profil}</h1>
-
-        <div className="progress-container">
+<div className="progress-container">
           <div
             className="progress-bar"
             style={{ width: `${progress}%` }}
           />
         </div>
-
-        <div className="assistant-box">
+<div className="assistant-box">
           <div className="assistant-avatar">
             {assistantMood}
           </div>
-
-          <div className="assistant-message">
+<div className="assistant-message">
             {assistantMessage}
           </div>
         </div>
-
-        <div className="exercise-box">
+<div className="exercise-box">
           <h3>{currentExercise.instruction}</h3>
-
-          {currentExercise.image && (
+{currentExercise.image && (
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
               <img
                 src={currentExercise.image}
@@ -337,12 +182,10 @@ function ExercisesContent() {
               />
             </div>
           )}
-
-          <h2 className="exercise-question">
+<h2 className="exercise-question">
             {currentExercise.question}
           </h2>
-
-          <input
+<input
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
@@ -355,43 +198,37 @@ function ExercisesContent() {
             className="exercise-input"
           />
         </div>
-
-        <div className="button-row">
+<div className="button-row">
           <button className="primary-button" onClick={checkAnswer}>
             Vérifier
           </button>
-
-          <button className="primary-button success-button" onClick={nextExercise}>
+<button
+            className="primary-button success-button"
+            onClick={nextExercise}
+          >
             Suivant
           </button>
         </div>
-
-        <div className="feedback-box">
+<div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
-
-        <div className="score-box">
+<div className="score-box">
           Score : {score} | XP : {xp} | Niveau : {currentLevel}
         </div>
-
-        <div className="fatigue-box">
+<div className="fatigue-box">
           🧠 Progression cognitive : {brainProgress}%
         </div>
-
-        <div className="fatigue-box">
+<div className="fatigue-box">
           💪 Confiance : {confidence}%
         </div>
-
-        <div className="fatigue-box">
+<div className="fatigue-box">
           😴 Fatigue : {cognitiveProfile.fatigue}%
         </div>
-
-        {badge && <div className="badge-box">{badge}</div>}
+{badge && <div className="badge-box">{badge}</div>}
       </div>
     </div>
   );
 }
-
 export default function ExercisesPage() {
   return (
     <Suspense fallback={<div>Chargement...</div>}>
@@ -399,3 +236,4 @@ export default function ExercisesPage() {
     </Suspense>
   );
 }
+
