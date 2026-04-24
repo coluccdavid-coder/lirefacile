@@ -210,16 +210,25 @@ const image = `https://loremflickr.com/400/400/${encodeURIComponent(
     setShowQuestion(true);
   }, [currentExercise]);
 
-  const checkAnswer = () => {
-    if (
-      answer.trim().toLowerCase() ===
-      currentExercise.answer.toLowerCase()
-    ) {
-      setScore((prev) => prev + 1);
-      setFeedback("Bonne réponse 👍");
-    } else {
-      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-    }
+  const normalizeText = (text) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ");
+};
+
+const checkAnswer = () => {
+  const userAnswer = normalizeText(answer);
+  const correctAnswer = normalizeText(currentExercise.answer);
+
+  if (userAnswer === correctAnswer) {
+    setScore((prev) => prev + 1);
+    setFeedback("Bonne réponse 👍");
+  } else {
+    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+  }
   };
 
   const nextExercise = () => {
