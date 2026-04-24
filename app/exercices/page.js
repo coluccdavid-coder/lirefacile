@@ -21,14 +21,7 @@ function ExercisesContent() {
   const [timer, setTimer] = useState(10);
   const [badge, setBadge] = useState(null);
   const [xp, setXp] = useState(0);
-  const [emotion, setEmotion] = useState(null);
-  const [aiMode, setAiMode] = useState(true);
-  const [reactionTime, setReactionTime] = useState(Date.now());
-  const [stats, setStats] = useState({
-    totalCorrect: 0,
-    totalWrong: 0,
-    averageSpeed: 0,
-  });
+  const [lastQuestions, setLastQuestions] = useState([]);
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -43,12 +36,17 @@ function ExercisesContent() {
           a: "chat",
           img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
         },
+        {
+          q: "Je mange une _____",
+          a: "pomme",
+          img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+        },
       ],
       2: [
         {
-          q: "Je mange une pomme _____",
-          a: "rouge",
-          img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+          q: "Le chat dort sur le _____",
+          a: "canapé",
+          img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
         },
       ],
       3: [
@@ -76,13 +74,13 @@ function ExercisesContent() {
 
     Dyslexie: {
       1: [{ q: "chat", a: "chat" }],
-      2: [{ q: "voiture", a: "voiture" }],
+      2: [{ q: "maison", a: "maison" }],
       3: [{ q: "ordinateur", a: "ordinateur" }],
       4: [{ q: "Le chat dort", a: "chat" }],
       5: [{ q: "Le garçon joue dans le jardin", a: "garçon" }],
     },
 
-    Memoire: {
+    Mémoire: {
       1: [{ q: "chat maison", a: "chat maison" }],
       2: [{ q: "chat maison livre", a: "chat maison livre" }],
       3: [{ q: "chat maison livre soleil", a: "chat maison livre soleil" }],
@@ -111,9 +109,7 @@ function ExercisesContent() {
     const safeLevel = Math.min(level + difficulty - 1, 5);
 
     const profileExercises = exercises[profil] || exercises.AVC;
-
     const levelExercises = profileExercises[safeLevel];
-
     const selected = randomItem(levelExercises);
 
     return {
@@ -123,7 +119,7 @@ function ExercisesContent() {
           ? "Complète la phrase avec l'image"
           : profil === "Dyslexie"
           ? "Lis puis écris"
-          : profil === "Memoire"
+          : profil === "Mémoire"
           ? "Mémorise"
           : profil === "Math"
           ? "Résous le calcul"
@@ -135,43 +131,29 @@ function ExercisesContent() {
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem("advanced-progress");
+    let newExercise;
+    let attempts = 0;
 
-    if (saved) {
-      const data = JSON.parse(saved);
-
-      setScore(data.score || 0);
-      setDifficulty(data.difficulty || 1);
-      setXp(data.xp || 0);
-      setEnergy(data.energy || 100);
-      setExerciseIndex(data.exerciseIndex || 0);
-    }
-  }, []);
-
-  useEffect(() => {
-    const newExercise = generateExercise(currentLevel, profil);
-    setCurrentExercise(newExercise);
-    setReactionTime(Date.now());
-  }, [exerciseIndex, profil, difficulty]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "advanced-progress",
-      JSON.stringify({
-        score,
-        difficulty,
-        xp,
-        energy,
-        exerciseIndex,
-      })
+    do {
+      newExercise = generateExercise(currentLevel, profil);
+      attempts++;
+    } while (
+      lastQuestions.includes(newExercise.question) &&
+      attempts < 30
     );
-  }, [score, difficulty, xp, energy, exerciseIndex]);
 
-  useEffect(() => {
-    if (energy <= 20) {
-      setFeedback("Pause recommandée 🧘");
-    }
-  }, [energy]);
+    setCurrentExercise(newExercise);
+
+    setLastQuestions((prev) => {
+      const updated = [...prev, newExercise.question];
+
+      if (updated.length > 15) {
+        updated.shift();
+      }
+
+      return updated;
+    });
+  }, [exerciseIndex, profil, difficulty]);
 
   const normalizeText = (text) =>
     text
@@ -182,8 +164,6 @@ function ExercisesContent() {
 
   const checkAnswer = () => {
     if (!currentExercise) return;
-
-    const responseTime = Math.floor((Date.now() - reactionTime) / 1000);
 
     const userAnswer = normalizeText(answer);
     const correctAnswer = normalizeText(currentExercise.answer);
@@ -201,11 +181,6 @@ function ExercisesContent() {
       setGoodStreak(streak);
       setBadStreak(0);
 
-      setStats((prev) => ({
-        ...prev,
-        totalCorrect: prev.totalCorrect + 1,
-      }));
-
       if (streak >= 5) {
         setDifficulty((prev) => Math.min(prev + 1, 5));
         setGoodStreak(0);
@@ -215,26 +190,19 @@ function ExercisesContent() {
       if (score + 1 === 25) setBadge("🏆 Expert");
       if (score + 1 === 50) setBadge("👑 Maître Cognitif");
 
-      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
+      setFeedback("Bonne réponse 👍");
     } else {
       const streak = badStreak + 1;
 
       setBadStreak(streak);
       setGoodStreak(0);
 
-      setStats((prev) => ({
-        ...prev,
-        totalWrong: prev.totalWrong + 1,
-      }));
-
       if (streak >= 3) {
         setDifficulty((prev) => Math.max(1, prev - 1));
         setBadStreak(0);
       }
 
-      setFeedback(
-        `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
-      );
+      setFeedback(`Incorrect ❌ Bonne réponse : ${currentExercise.answer}`);
     }
   };
 
@@ -242,30 +210,6 @@ function ExercisesContent() {
     setExerciseIndex((prev) => prev + 1);
     setAnswer("");
     setFeedback("");
-  };
-
-  const speakText = (text) => {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "fr-FR";
-    speech.rate = 0.9;
-    window.speechSynthesis.speak(speech);
-  };
-
-  const startVoiceRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "fr-FR";
-
-    recognition.onresult = (event) => {
-      setAnswer(event.results[0][0].transcript);
-    };
-
-    recognition.start();
   };
 
   const progress = ((exerciseIndex % 10) / 10) * 100;
@@ -277,38 +221,8 @@ function ExercisesContent() {
       <div className="main-card">
         <h1 className="main-title">Exercices {profil}</h1>
 
-        <div className="button-row">
-          <button onClick={() => setDarkMode(!darkMode)}>
-            🌙 Mode sombre
-          </button>
-
-          <button
-            onClick={() =>
-              speakText(
-                `${currentExercise.instruction} ${currentExercise.question}`
-              )
-            }
-          >
-            Lire 🔊
-          </button>
-
-          <button onClick={startVoiceRecognition}>
-            Répondre 🎤
-          </button>
-        </div>
-
-        <div className="emotion-row">
-          <button onClick={() => setEmotion("🙂")}>🙂</button>
-          <button onClick={() => setEmotion("😐")}>😐</button>
-          <button onClick={() => setEmotion("😴")}>😴</button>
-        </div>
-
         <div className="progress-container">
           <div className="progress-bar" style={{ width: `${progress}%` }} />
-        </div>
-
-        <div className="energy-bar-container">
-          <div className="energy-bar" style={{ width: `${energy}%` }} />
         </div>
 
         <div className="exercise-box">
@@ -361,12 +275,6 @@ function ExercisesContent() {
 
         <div className="score-box">
           Score : {score} | XP : {xp} | Niveau : {currentLevel} | Difficulté : {difficulty}
-        </div>
-
-        <div className="stats-box">
-          <p>Bonnes réponses : {stats.totalCorrect}</p>
-          <p>Erreurs : {stats.totalWrong}</p>
-          <p>Émotion : {emotion || "Non définie"}</p>
         </div>
       </div>
     </div>
