@@ -51,7 +51,7 @@ function ExercisesContent() {
       2: [
         {
           q: "Le chat dort sur le _____",
-          a: "canapé",
+          a: "lit",
           img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
         },
       ],
