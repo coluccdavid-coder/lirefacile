@@ -15,10 +15,14 @@ function ExercisesContent() {
   const [showQuestion, setShowQuestion] = useState(true);
   const [timer, setTimer] = useState(10);
   const [difficulty, setDifficulty] = useState(1);
-  const [errorCount, setErrorCount] = useState(0);
   const [goodStreak, setGoodStreak] = useState(0);
   const [badStreak, setBadStreak] = useState(0);
   const [lastQuestions, setLastQuestions] = useState([]);
+  const [badge, setBadge] = useState(null);
+  const [energy, setEnergy] = useState(100);
+  const [darkMode, setDarkMode] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [currentExercise, setCurrentExercise] = useState(null);
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -34,7 +38,6 @@ function ExercisesContent() {
     "montagne",
     "école",
     "livre",
-    "fenêtre",
     "table",
     "chaise",
     "jardin",
@@ -44,13 +47,6 @@ function ExercisesContent() {
     "vélo",
     "forêt",
   ];
-
-  function randomItem(array) {
-    return array[Math.floor(Math.random() * array.length)];
-  }
-
- function generateExercise(level, profil) {
-  const randomWord = randomItem(words);
 
   const imageLibrary = {
     maison: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
@@ -63,27 +59,17 @@ function ExercisesContent() {
     ordinateur: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
     montagne: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
     école: "https://images.unsplash.com/photo-1580582932707-520aed937b7b",
-    livre: "https://images.unsplash.com/photo-1512820790803-83ca734da794",
-    table: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-    chaise: "https://images.unsplash.com/photo-1519947486511-46149fa0a254",
-    jardin: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735",
-    musique: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
-    papillon: "https://images.unsplash.com/photo-1444927714506-8492d94b4e3d",
-    bateau: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
-    vélo: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8",
-    forêt: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
   };
 
-  const image = imageLibrary[randomWord] || null;
-  const adjustedLevel = level + difficulty;
+  const randomItem = (array) =>
+    array[Math.floor(Math.random() * array.length)];
 
-  // ====================
-  // AVC
-  // ====================
-  if (profil === "AVC") {
-    const type = randomItem(["mot", "phrase", "memoire"]);
+  function generateExercise(level, profil) {
+    const randomWord = randomItem(words);
+    const image = imageLibrary[randomWord] || null;
+    const adjustedLevel = level + difficulty;
 
-    if (type === "mot") {
+    if (profil === "AVC") {
       return {
         type: "mot",
         instruction: "Complète le mot :",
@@ -93,36 +79,7 @@ function ExercisesContent() {
       };
     }
 
-    if (type === "phrase") {
-      return {
-        type: "phrase",
-        instruction: "Observe l'image puis complète :",
-        question: "Je vois une _____",
-        answer: randomWord,
-        image,
-      };
-    }
-
-    const memoryWords = [...words]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, Math.min(adjustedLevel + 2, 6));
-
-    return {
-      type: "memoire",
-      instruction: "Mémorise les mots :",
-      question: memoryWords.join(" "),
-      answer: memoryWords.join(" "),
-      image: null,
-    };
-  }
-
-  // ====================
-  // DYSLEXIE
-  // ====================
-  if (profil === "Dyslexie") {
-    const type = randomItem(["lecture", "mot"]);
-
-    if (type === "lecture") {
+    if (profil === "Dyslexie") {
       return {
         type: "lecture",
         instruction: "Lis puis écris le mot :",
@@ -132,131 +89,52 @@ function ExercisesContent() {
       };
     }
 
+    if (profil === "Mémoire") {
+      const memoryWords = [...words]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.min(adjustedLevel + 2, 6));
+
+      return {
+        type: "memoire",
+        instruction: "Mémorise les mots :",
+        question: memoryWords.join(" "),
+        answer: memoryWords.join(" "),
+        image: null,
+      };
+    }
+
+    if (profil === "Math") {
+      const max = adjustedLevel * 10;
+
+      const a = Math.floor(Math.random() * max);
+      const b = Math.floor(Math.random() * max);
+
+      const operations = ["+", "-", "*"];
+      const op = randomItem(operations);
+
+      let result = 0;
+
+      if (op === "+") result = a + b;
+      if (op === "-") result = a - b;
+      if (op === "*") result = a * b;
+
+      return {
+        type: "math",
+        instruction: "Résous le calcul :",
+        question: `${a} ${op} ${b}`,
+        answer: result.toString(),
+        image: null,
+      };
+    }
+
     return {
       type: "mot",
-      instruction: "Complète le mot :",
-      question: `${randomWord.slice(0, 3)}___`,
+      instruction: "Écris le mot :",
+      question: randomWord,
       answer: randomWord,
       image,
     };
   }
-
-  // ====================
-  // AUTISME
-  // ====================
- if (profil === "Autisme") {
-  const routines = [
-    {
-      q: "Que fais-tu après le réveil ?",
-      a: "petit déjeuner",
-      img: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
-    },
-    {
-      q: "Quelle couleur a le ciel ?",
-      a: "bleu",
-      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    },
-    {
-      q: "Que fais-tu avant de dormir ?",
-      a: "se brosser les dents",
-      img: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04",
-    },
-    {
-      q: "Que mets-tu pour dormir ?",
-      a: "pyjama",
-      img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
-    },
-  ];
-
-  const routine = randomItem(routines);
-
-  return {
-    type: "routine",
-    instruction: "Observe puis réponds :",
-    question: routine.q,
-    answer: routine.a,
-    image: routine.img,
-  };
-}
-
-  // ====================
-  // MÉMOIRE
-  // ====================
-  if (profil === "Mémoire") {
-    const memoryWords = [...words]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, Math.min(adjustedLevel + 3, 8));
-
-    return {
-      type: "memoire",
-      instruction: "Observe et mémorise :",
-      question: memoryWords.join(" "),
-      answer: memoryWords.join(" "),
-      image: null,
-    };
-  }
-
-  // ====================
-  // CONCENTRATION
-  // ====================
-  if (profil === "Concentration") {
-    const suites = [
-      { q: "2, 4, 6, 8, ___", a: "10" },
-      { q: "5, 10, 15, ___", a: "20" },
-      { q: "1, 3, 5, 7, ___", a: "9" },
-    ];
-
-    const suite = randomItem(suites);
-
-    return {
-      type: "attention",
-      instruction: "Trouve le nombre suivant :",
-      question: suite.q,
-      answer: suite.a,
-      image: null,
-    };
-  }
-
-  // ====================
-  // MATH
-  // ====================
-  if (profil === "Math") {
-    const max = adjustedLevel * 10;
-
-    const a = Math.floor(Math.random() * max);
-    const b = Math.floor(Math.random() * max);
-
-    const operations = ["+", "-", "*"];
-    const op = randomItem(operations);
-
-    let result = 0;
-
-    if (op === "+") result = a + b;
-    if (op === "-") result = a - b;
-    if (op === "*") result = a * b;
-
-    return {
-      type: "math",
-      instruction: "Résous le calcul :",
-      question: `${a} ${op} ${b}`,
-      answer: result.toString(),
-      image: null,
-    };
-  }
-
-  // ====================
-  // FALLBACK
-  // ====================
-  return {
-    type: "mot",
-    instruction: "Écris le mot :",
-    question: randomWord,
-    answer: randomWord,
-    image,
-  };
-}
-
-  const [currentExercise, setCurrentExercise] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("lirefacile-progress");
@@ -266,33 +144,35 @@ function ExercisesContent() {
 
       setScore(data.score || 0);
       setExerciseIndex(data.exerciseIndex || 0);
+      setDifficulty(data.difficulty || 1);
+      setEnergy(data.energy || 100);
     }
   }, []);
 
-useEffect(() => {
-  let newExercise;
-  let attempts = 0;
+  useEffect(() => {
+    let newExercise;
+    let attempts = 0;
 
-  do {
-    newExercise = generateExercise(currentLevel, profil);
-    attempts++;
-  } while (
-    lastQuestions.includes(newExercise.question) &&
-    attempts < 20
-  );
+    do {
+      newExercise = generateExercise(currentLevel, profil);
+      attempts++;
+    } while (
+      lastQuestions.includes(newExercise.question) &&
+      attempts < 20
+    );
 
-  setCurrentExercise(newExercise);
+    setCurrentExercise(newExercise);
 
-  setLastQuestions((prev) => {
-    const updated = [...prev, newExercise.question];
+    setLastQuestions((prev) => {
+      const updated = [...prev, newExercise.question];
 
-    if (updated.length > 10) {
-      updated.shift();
-    }
+      if (updated.length > 10) {
+        updated.shift();
+      }
 
-    return updated;
-  });
-}, [exerciseIndex, profil]);
+      return updated;
+    });
+  }, [exerciseIndex, profil]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -300,10 +180,11 @@ useEffect(() => {
       JSON.stringify({
         score,
         exerciseIndex,
-        profil,
+        difficulty,
+        energy,
       })
     );
-  }, [score, exerciseIndex, profil]);
+  }, [score, exerciseIndex, difficulty, energy]);
 
   useEffect(() => {
     if (!currentExercise) return;
@@ -331,15 +212,10 @@ useEffect(() => {
   }, [currentExercise]);
 
   useEffect(() => {
-    if (errorCount >= 3) {
-      setFeedback(
-        "On ralentit un peu pour rendre l'exercice plus simple 🧠"
-      );
-
-      setDifficulty((prev) => Math.max(1, prev - 1));
-      setErrorCount(0);
+    if (energy <= 20) {
+      setFeedback("Pause recommandée 🧘");
     }
-  }, [errorCount]);
+  }, [energy]);
 
   const normalizeText = (text) => {
     return text
@@ -351,65 +227,63 @@ useEffect(() => {
   };
 
   const checkAnswer = () => {
+    if (!currentExercise) return;
+
     const userAnswer = normalizeText(answer);
     const correctAnswer = normalizeText(currentExercise.answer);
 
-    if (!userAnswer) {
-      setFeedback("Écris une réponse");
-      return;
+    const isCorrect =
+      currentExercise.type === "memoire"
+        ? userAnswer.split(" ").length ===
+            correctAnswer.split(" ").length &&
+          userAnswer
+            .split(" ")
+            .every((word) =>
+              correctAnswer.split(" ").includes(word)
+            )
+        : userAnswer === correctAnswer;
+
+    setEnergy((prev) => Math.max(0, prev - 2));
+
+    setHistory((prev) => [
+      ...prev,
+      {
+        correct: isCorrect,
+        date: Date.now(),
+      },
+    ]);
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+
+      const newGood = goodStreak + 1;
+
+      setGoodStreak(newGood);
+      setBadStreak(0);
+
+      if (newGood >= 5) {
+        setDifficulty((prev) => prev + 1);
+        setGoodStreak(0);
+      }
+
+      if (score + 1 === 10) setBadge("🌟 Débutant");
+      if (score + 1 === 25) setBadge("🏆 Expert");
+
+      setFeedback("Bonne réponse 👍");
+    } else {
+      const newBad = badStreak + 1;
+
+      setBadStreak(newBad);
+      setGoodStreak(0);
+
+      if (newBad >= 3) {
+        setDifficulty((prev) => Math.max(1, prev - 1));
+        setBadStreak(0);
+      }
+
+      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
     }
-
-  const isCorrect =
-  currentExercise.type === "memoire"
-    ? userAnswer.split(" ").length ===
-        correctAnswer.split(" ").length &&
-      userAnswer
-        .split(" ")
-        .every((word) =>
-          correctAnswer.split(" ").includes(word)
-        )
-    : (
-        userAnswer === correctAnswer ||
-        correctAnswer.includes(userAnswer) ||
-        userAnswer.includes(correctAnswer)
-      );
-
-if (isCorrect) {
-  setScore((prev) => prev + 1);
-
-  const newGoodStreak = goodStreak + 1;
-
-  setGoodStreak(newGoodStreak);
-  setBadStreak(0);
-
-  if (newGoodStreak >= 5) {
-    setDifficulty((prev) => prev + 1);
-    setGoodStreak(0);
-    setFeedback("Excellent 🎯 Difficulté augmentée");
-  } else {
-    setFeedback("Bonne réponse 👍");
-  }
-} else {
-  const newBadStreak = badStreak + 1;
-
-  setBadStreak(newBadStreak);
-  setGoodStreak(0);
-
-  if (newBadStreak >= 3) {
-    setDifficulty((prev) => Math.max(1, prev - 1));
-    setBadStreak(0);
-    setFeedback("On simplifie un peu 🧠");
-  } else {
-    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-  }
-}
-
-  if (badStreak >= 2) {
-    setDifficulty((prev) => Math.max(1, prev - 1));
-    setBadStreak(0);
-    setFeedback("On simplifie un peu 🧠");
-  }
-};
+  };
 
   const nextExercise = () => {
     setExerciseIndex((prev) => prev + 1);
@@ -446,24 +320,20 @@ if (isCorrect) {
   if (!currentExercise) return null;
 
   return (
-    <div className="page-container">
+    <div className={`page-container ${darkMode ? "dark" : ""}`}>
       <div className="main-card fade-in">
         <h1 className="main-title">Exercices {profil}</h1>
 
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div className="level-box">Niveau {currentLevel}</div>
-        </div>
+        <div className="button-row">
+          <button onClick={() => setDarkMode(!darkMode)}>
+            🌙 Mode sombre
+          </button>
 
-        <div className="button-row" style={{ justifyContent: "center" }}>
-          <button
-            className="primary-button"
-            onClick={() => setDyslexiaFont(!dyslexiaFont)}
-          >
+          <button onClick={() => setDyslexiaFont(!dyslexiaFont)}>
             Police Dyslexie
           </button>
 
           <button
-            className="primary-button"
             onClick={() =>
               speakText(
                 `${currentExercise.instruction} ${currentExercise.question}`
@@ -473,10 +343,7 @@ if (isCorrect) {
             Lire 🔊
           </button>
 
-          <button
-            className="primary-button"
-            onClick={startVoiceRecognition}
-          >
+          <button onClick={startVoiceRecognition}>
             Répondre 🎤
           </button>
         </div>
@@ -488,14 +355,15 @@ if (isCorrect) {
           />
         </div>
 
-        <div
-          className={`exercise-box ${
-            dyslexiaFont ? "dyslexia-font" : ""
-          }`}
-        >
-          <p className="exercise-label">
-            {currentExercise.instruction}
-          </p>
+        <div className="energy-bar-container">
+          <div
+            className="energy-bar"
+            style={{ width: `${energy}%` }}
+          />
+        </div>
+
+        <div className={`exercise-box ${dyslexiaFont ? "dyslexia-font" : ""}`}>
+          <p>{currentExercise.instruction}</p>
 
           {currentExercise.image && (
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -512,16 +380,14 @@ if (isCorrect) {
             </div>
           )}
 
-          <h2 className="exercise-question easy-reading">
+          <h2>
             {showQuestion
               ? currentExercise.question
               : "Quels étaient les mots affichés ?"}
           </h2>
 
           {currentExercise.type === "memoire" && showQuestion && (
-            <div className="timer-box">
-              Disparition dans : {timer}s
-            </div>
+            <div>Disparition dans : {timer}s</div>
           )}
 
           <input
@@ -533,27 +399,20 @@ if (isCorrect) {
                 checkAnswer();
               }
             }}
-            placeholder="Écris ta réponse"
             className="exercise-input"
           />
         </div>
 
         <div className="button-row">
-          <button className="primary-button" onClick={checkAnswer}>
-            Vérifier
-          </button>
-
-          <button
-            className="primary-button success-button"
-            onClick={nextExercise}
-          >
-            Exercice suivant
-          </button>
+          <button onClick={checkAnswer}>Vérifier</button>
+          <button onClick={nextExercise}>Exercice suivant</button>
         </div>
 
-        <div className="feedback-box">
+        <div className={`feedback-box ${feedback ? "feedback-success" : ""}`}>
           <h2>{feedback}</h2>
         </div>
+
+        {badge && <div className="badge-box">Badge : {badge}</div>}
 
         <div className="score-box">
           Score : {score} | Difficulté : {difficulty}
@@ -570,4 +429,3 @@ export default function ExercisesPage() {
     </Suspense>
   );
 }
-
