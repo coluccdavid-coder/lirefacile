@@ -357,7 +357,10 @@ to {
 .profile-card:hover {
   transform: translateY(-8px);
 }
-  /* ========================= */
+
+} /* ← fermeture du media query */
+
+/* ========================= */
 /* ASSISTANT IA */
 /* ========================= */
 
@@ -393,10 +396,6 @@ to {
   line-height: 1.5;
 }
 
-/* ========================= */
-/* BADGES */
-/* ========================= */
-
 .badge-box {
   margin-top: 25px;
   background: linear-gradient(135deg, #fde68a, #f59e0b);
@@ -408,10 +407,6 @@ to {
   text-align: center;
 }
 
-/* ========================= */
-/* FATIGUE */
-/* ========================= */
-
 .fatigue-box {
   margin-top: 20px;
   background: #f3f4f6;
@@ -421,9 +416,7 @@ to {
   font-weight: 600;
 }
 
-/* ========================= */
-/* RESPONSIVE ASSISTANT */
-/* ========================= */
+/* Responsive assistant */
 
 @media (max-width: 768px) {
   .assistant-box {
@@ -441,5 +434,3 @@ to {
     font-size: 18px;
   }
 }
-}
-
