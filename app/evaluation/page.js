@@ -1,66 +1,66 @@
 "use client";
-                Terminer l’évaluation
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="analysis-box">
-              <div className="analysis-title">
-                Analyse Terminée
-              </div>
 
-              <p
-                style={{
-                  marginBottom: "25px",
-                  lineHeight: "2",
-                }}
-              >
-                L’IA pourra maintenant adapter les exercices selon :
-              </p>
+import Link from "next/link";
 
-              <ul
-                style={{
-                  lineHeight: "2.2",
-                  marginLeft: "25px",
-                  fontSize: "20px",
-                }}
-              >
-                <li>Mémoire</li>
-                <li>Lecture</li>
-                <li>Écriture</li>
-                <li>Fatigue</li>
-                <li>Parole</li>
-              </ul>
-            </div>
+export default function EvaluationPage() {
+  return (
+    <div className="page-container">
+      <div className="main-card fade-in">
 
-            <div
-              className="button-row"
-              style={{
-                marginTop: "35px",
-                justifyContent: "center",
-              }}
-            >
-              <Link href="/profil">
-                <button className="primary-button success-button">
-                  Voir mon Profil IA
-                </button>
-              </Link>
+        <h1 className="main-title">
+          Évaluation Cognitive
+        </h1>
 
-              <Link href="/exercices">
-                <button className="primary-button warning-button">
-                  Commencer les Exercices
-                </button>
-              </Link>
+        <div className="analysis-box">
+          <div className="analysis-title">
+            Analyse Terminée
+          </div>
 
-              <Link href="/">
-                <button className="primary-button">
-                  Retour Accueil
-                </button>
-              </Link>
-            </div>
-          </>
-        )}
+          <p
+            style={{
+              fontSize: "22px",
+              lineHeight: "1.8",
+              marginBottom: "25px",
+            }}
+          >
+            L’IA pourra maintenant adapter les exercices selon :
+          </p>
+
+          <ul
+            style={{
+              fontSize: "22px",
+              lineHeight: "2.2",
+              paddingLeft: "25px",
+            }}
+          >
+            <li>Mémoire</li>
+            <li>Lecture</li>
+            <li>Écriture</li>
+            <li>Fatigue</li>
+            <li>Parole</li>
+          </ul>
+        </div>
+
+        <div
+          className="button-row"
+          style={{
+            justifyContent: "center",
+            marginTop: "35px",
+          }}
+        >
+          <Link href="/profil">
+            <button className="primary-button success-button">
+              Voir mon profil IA
+            </button>
+          </Link>
+
+          <Link href="/">
+            <button className="primary-button">
+              Retour accueil
+            </button>
+          </Link>
+        </div>
+
       </div>
     </div>
   );
