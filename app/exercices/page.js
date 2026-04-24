@@ -387,9 +387,14 @@ function ExercisesContent() {
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Écris ta réponse"
-            className="exercise-input"
-          />
+            onKeyDown={(e) => {
+            if (e.key === "Enter") {
+      checkAnswer();
+    }
+  }}
+  placeholder="Écris ta réponse"
+  className="exercise-input"
+/>
         </div>
 
         <div className="button-row">
