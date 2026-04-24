@@ -16,6 +16,7 @@ function ExercisesContent() {
   const [timer, setTimer] = useState(10);
   const [difficulty, setDifficulty] = useState(1);
   const [errorCount, setErrorCount] = useState(0);
+  const [lastQuestion, setLastQuestion] = useState("");
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -193,9 +194,21 @@ function ExercisesContent() {
     }
   }, []);
 
-  useEffect(() => {
-    setCurrentExercise(generateExercise(currentLevel, profil));
-  }, [exerciseIndex, profil]);
+useEffect(() => {
+  let newExercise;
+  let attempts = 0;
+
+  do {
+    newExercise = generateExercise(currentLevel, profil);
+    attempts++;
+  } while (
+    newExercise.question === lastQuestion &&
+    attempts < 10
+  );
+
+  setCurrentExercise(newExercise);
+  setLastQuestion(newExercise.question);
+}, [exerciseIndex, profil]);
 
   useEffect(() => {
     localStorage.setItem(
