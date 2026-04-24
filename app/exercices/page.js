@@ -16,12 +16,18 @@ function ExercisesContent() {
   const [badStreak, setBadStreak] = useState(0);
   const [currentExercise, setCurrentExercise] = useState(null);
   const [energy, setEnergy] = useState(100);
-  const [darkMode, setDarkMode] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(true);
-  const [timer, setTimer] = useState(10);
-  const [badge, setBadge] = useState(null);
   const [xp, setXp] = useState(0);
+  const [badge, setBadge] = useState(null);
   const [lastQuestions, setLastQuestions] = useState([]);
+  const [startTime, setStartTime] = useState(Date.now());
+
+  const [cognitiveProfile, setCognitiveProfile] = useState({
+    memory: 50,
+    attention: 50,
+    language: 50,
+    fatigue: 0,
+    confidence: 50,
+  });
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -110,24 +116,46 @@ function ExercisesContent() {
 
     const profileExercises = exercises[profil] || exercises.AVC;
     const levelExercises = profileExercises[safeLevel];
+
     const selected = randomItem(levelExercises);
 
     return {
-      type: profil,
       instruction:
         profil === "AVC"
-          ? "Complète la phrase avec l'image"
+          ? "Complète la phrase"
           : profil === "Dyslexie"
           ? "Lis puis écris"
           : profil === "Mémoire"
           ? "Mémorise"
           : profil === "Math"
           ? "Résous le calcul"
-          : "Trouve la réponse",
+          : "Réponds",
       question: selected.q,
       answer: selected.a,
       image: selected.img || null,
     };
+  }
+
+  function adaptDifficulty(history) {
+    const recent = history.slice(-10);
+
+    if (recent.length === 0) return "keep";
+
+    const successRate =
+      recent.filter((x) => x.correct).length / recent.length;
+
+    if (successRate > 0.8) return "increase";
+    if (successRate < 0.5) return "decrease";
+
+    return "keep";
+  }
+
+  function calculateFatigue(history) {
+    const recent = history.slice(-5);
+
+    return recent.filter(
+      (x) => !x.correct || x.responseTime > 12
+    ).length;
   }
 
   useEffect(() => {
@@ -143,11 +171,12 @@ function ExercisesContent() {
     );
 
     setCurrentExercise(newExercise);
+    setStartTime(Date.now());
 
     setLastQuestions((prev) => {
       const updated = [...prev, newExercise.question];
 
-      if (updated.length > 15) {
+      if (updated.length > 20) {
         updated.shift();
       }
 
@@ -165,12 +194,52 @@ function ExercisesContent() {
   const checkAnswer = () => {
     if (!currentExercise) return;
 
+    const responseTime = Math.floor((Date.now() - startTime) / 1000);
+
     const userAnswer = normalizeText(answer);
     const correctAnswer = normalizeText(currentExercise.answer);
 
     const isCorrect = userAnswer === correctAnswer;
 
-    setEnergy((prev) => Math.max(0, prev - 2));
+    const sessionData = {
+      correct: isCorrect,
+      difficulty,
+      responseTime,
+      profile: profil,
+      timestamp: Date.now(),
+    };
+
+    const savedAnalytics =
+      JSON.parse(localStorage.getItem("analytics")) || [];
+
+    savedAnalytics.push(sessionData);
+
+    localStorage.setItem(
+      "analytics",
+      JSON.stringify(savedAnalytics)
+    );
+
+    const aiDecision = adaptDifficulty(savedAnalytics);
+
+    if (aiDecision === "increase") {
+      setDifficulty((prev) => Math.min(prev + 1, 5));
+    }
+
+    if (aiDecision === "decrease") {
+      setDifficulty((prev) => Math.max(prev - 1, 1));
+    }
+
+    const fatigueScore = calculateFatigue(savedAnalytics);
+
+    setCognitiveProfile((prev) => ({
+      ...prev,
+      fatigue: fatigueScore * 10,
+    }));
+
+    if (fatigueScore >= 4) {
+      setFeedback("Pause recommandée 🧘");
+      return;
+    }
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -181,28 +250,24 @@ function ExercisesContent() {
       setGoodStreak(streak);
       setBadStreak(0);
 
-      if (streak >= 5) {
-        setDifficulty((prev) => Math.min(prev + 1, 5));
-        setGoodStreak(0);
-      }
-
       if (score + 1 === 10) setBadge("🌟 Débutant");
       if (score + 1 === 25) setBadge("🏆 Expert");
       if (score + 1 === 50) setBadge("👑 Maître Cognitif");
 
-      setFeedback("Bonne réponse 👍");
+      setEnergy((prev) => Math.max(0, prev - 1));
+
+      setFeedback(`Bonne réponse 👍 (${responseTime}s)`);
     } else {
       const streak = badStreak + 1;
 
       setBadStreak(streak);
       setGoodStreak(0);
 
-      if (streak >= 3) {
-        setDifficulty((prev) => Math.max(1, prev - 1));
-        setBadStreak(0);
-      }
+      setEnergy((prev) => Math.max(0, prev - 3));
 
-      setFeedback(`Incorrect ❌ Bonne réponse : ${currentExercise.answer}`);
+      setFeedback(
+        `Incorrect ❌ Bonne réponse : ${currentExercise.answer}`
+      );
     }
   };
 
@@ -217,22 +282,22 @@ function ExercisesContent() {
   if (!currentExercise) return null;
 
   return (
-    <div className={`page-container ${darkMode ? "dark" : ""}`}>
+    <div className="page-container">
       <div className="main-card">
         <h1 className="main-title">Exercices {profil}</h1>
 
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: `${progress}%` }} />
+          <div
+            className="progress-bar"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
         <div className="exercise-box">
-          <div className="instruction-box">
-            <span>Consigne</span>
-            <h3>{currentExercise.instruction}</h3>
-          </div>
+          <h3>{currentExercise.instruction}</h3>
 
           {currentExercise.image && (
-            <div style={{ textAlign: "center", marginBottom: "25px" }}>
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
               <img
                 src={currentExercise.image}
                 alt="indice"
@@ -264,18 +329,22 @@ function ExercisesContent() {
 
         <div className="button-row">
           <button onClick={checkAnswer}>Vérifier</button>
-          <button onClick={nextExercise}>Exercice suivant</button>
+          <button onClick={nextExercise}>Suivant</button>
         </div>
 
         <div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
 
-        {badge && <div className="badge-box">{badge}</div>}
+        <div className="score-box">
+          Score : {score} | XP : {xp} | Niveau : {currentLevel}
+        </div>
 
         <div className="score-box">
-          Score : {score} | XP : {xp} | Niveau : {currentLevel} | Difficulté : {difficulty}
+          Fatigue : {cognitiveProfile.fatigue}%
         </div>
+
+        {badge && <div className="badge-box">{badge}</div>}
       </div>
     </div>
   );
