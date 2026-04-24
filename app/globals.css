@@ -326,4 +326,35 @@ to {
 .profile-grid {
     grid-template-columns: 1fr;
   }
+  /* ========================= */
+/* EFFET PREMIUM CARTES */
+/* ========================= */
+
+.profile-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: "";
+  position: absolute;
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,0.35),
+    transparent 70%
+  );
+  top: -60%;
+  left: -60%;
+  transition: 0.5s ease;
+}
+
+.profile-card:hover::before {
+  transform: scale(1.15);
+}
+
+.profile-card:hover {
+  transform: translateY(-8px);
+}
 }
