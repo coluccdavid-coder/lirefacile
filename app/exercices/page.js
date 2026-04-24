@@ -17,6 +17,9 @@ function ExercisesContent() {
   const [difficulty, setDifficulty] = useState(1);
   const [errorCount, setErrorCount] = useState(0);
   const [lastQuestion, setLastQuestion] = useState("");
+  const [goodStreak, setGoodStreak] = useState(0);
+  const [badStreak, setBadStreak] = useState(0);
+  const [lastQuestions, setLastQuestions] = useState([]);
 
   const currentLevel = Math.floor(exerciseIndex / 10) + 1;
 
@@ -289,12 +292,21 @@ useEffect(() => {
     newExercise = generateExercise(currentLevel, profil);
     attempts++;
   } while (
-    newExercise.question === lastQuestion &&
-    attempts < 10
+    lastQuestions.includes(newExercise.question) &&
+    attempts < 20
   );
 
   setCurrentExercise(newExercise);
-  setLastQuestion(newExercise.question);
+
+  setLastQuestions((prev) => {
+    const updated = [...prev, newExercise.question];
+
+    if (updated.length > 10) {
+      updated.shift();
+    }
+
+    return updated;
+  });
 }, [exerciseIndex, profil]);
 
   useEffect(() => {
@@ -376,19 +388,35 @@ useEffect(() => {
         correctAnswer.includes(userAnswer) ||
         userAnswer.includes(correctAnswer)
       );
+        userAnswer === correctAnswer ||
+        correctAnswer.includes(userAnswer) ||
+        userAnswer.includes(correctAnswer)
+      );
 
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setFeedback("Bonne réponse 👍");
+if (isCorrect) {
+  setScore((prev) => prev + 1);
+  setFeedback("Bonne réponse 👍");
 
-      if ((score + 1) % 5 === 0) {
-        setDifficulty((prev) => prev + 1);
-      }
-    } else {
-      setFeedback(`Bonne réponse : ${currentExercise.answer}`);
-      setErrorCount((prev) => prev + 1);
-    }
-  };
+  setGoodStreak((prev) => prev + 1);
+  setBadStreak(0);
+
+  if (goodStreak >= 4) {
+    setDifficulty((prev) => prev + 1);
+    setGoodStreak(0);
+    setFeedback("Excellent 🎯 Difficulté augmentée");
+  }
+} else {
+  setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+
+  setBadStreak((prev) => prev + 1);
+  setGoodStreak(0);
+
+  if (badStreak >= 2) {
+    setDifficulty((prev) => Math.max(1, prev - 1));
+    setBadStreak(0);
+    setFeedback("On simplifie un peu 🧠");
+  }
+}
 
   const nextExercise = () => {
     setExerciseIndex((prev) => prev + 1);
