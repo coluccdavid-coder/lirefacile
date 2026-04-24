@@ -42,7 +42,10 @@ export default function ProfilPage() {
   return (
     <div className="page-container">
       <div className="main-card fade-in">
-        <h1 className="main-title">Profil Cognitif IA</h1>
+
+        <h1 className="main-title">
+          Profil Cognitif IA
+        </h1>
 
         <div className="analysis-box">
           <div className="analysis-title">
@@ -50,43 +53,63 @@ export default function ProfilPage() {
           </div>
 
           <div className="analysis-grid">
+
             <div className="analysis-card">
               <div className="analysis-label">Mémoire</div>
-              <div className="analysis-value">{profile.memory}%</div>
+              <div className="analysis-value">
+                {profile.memory}%
+              </div>
             </div>
 
             <div className="analysis-card">
               <div className="analysis-label">Attention</div>
-              <div className="analysis-value">{profile.attention}%</div>
+              <div className="analysis-value">
+                {profile.attention}%
+              </div>
             </div>
 
             <div className="analysis-card">
               <div className="analysis-label">Risque Dys</div>
-              <div className="analysis-value">{profile.dyslexiaRisk}%</div>
+              <div className="analysis-value">
+                {profile.dyslexiaRisk}%
+              </div>
             </div>
 
             <div className="analysis-card">
               <div className="analysis-label">Lecture</div>
-              <div className="analysis-value">{profile.reading}%</div>
+              <div className="analysis-value">
+                {profile.reading}%
+              </div>
             </div>
+
           </div>
         </div>
 
         <div className="assistant-box">
           <div className="assistant-avatar">🧠</div>
+
           <div className="assistant-message">
-            L'IA analyse ton profil et adapte automatiquement les exercices.
+            L’IA adapte automatiquement les exercices selon ton profil.
           </div>
-}   </div>
         </div>
 
-        <div className="button-row" style={{ justifyContent: "center" }}>
+        <div
+          className="button-row"
+          style={{ justifyContent: "center" }}
+        >
           <Link href="/exercices">
-            <button className="primary-button">
+            <button className="primary-button success-button">
               Commencer les exercices
             </button>
           </Link>
+
+          <Link href="/">
+            <button className="primary-button">
+              Retour accueil
+            </button>
+          </Link>
         </div>
+
       </div>
     </div>
   );
