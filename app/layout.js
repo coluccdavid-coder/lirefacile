@@ -1,12 +1,22 @@
+import "./globals.css";
+
 export const metadata = {
   title: "LireFacile",
-  description: "Application de simplification de texte",
+  description: "Plateforme AVC & Dyslexie",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body
+        style={{
+          margin: 0,
+          padding: 0,
+          backgroundColor: "#e5e5e5",
+        }}
+      >
+        {children}
+      </body>
     </html>
   );
 }
