@@ -555,7 +555,6 @@ to {
 /* ========================= */
 /* RESPONSIVE PREMIUM */
 /* ========================= */
-
 @media (max-width: 768px) {
   .exercise-card {
     padding: 28px;
@@ -572,8 +571,9 @@ to {
   .analysis-grid {
     grid-template-columns: 1fr;
   }
-  
-  /* ========================= */
+}
+
+/* ========================= */
 /* ANALYSE COGNITIVE IA */
 /* ========================= */
 
@@ -582,7 +582,7 @@ to {
   background: linear-gradient(135deg, #ffffff, #f8fbff);
   border-radius: 30px;
   padding: 35px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
   border: 1px solid #dbeafe;
 }
 
@@ -606,7 +606,7 @@ to {
   padding: 25px;
   text-align: center;
   transition: 0.25s ease;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
 }
 
 .analysis-card:hover {
@@ -629,5 +629,4 @@ to {
   .analysis-grid {
     grid-template-columns: 1fr;
   }
-}
 }
