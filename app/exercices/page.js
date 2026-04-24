@@ -16,7 +16,6 @@ function ExercisesContent() {
   const [timer, setTimer] = useState(10);
   const [difficulty, setDifficulty] = useState(1);
   const [errorCount, setErrorCount] = useState(0);
-  const [lastQuestion, setLastQuestion] = useState("");
   const [goodStreak, setGoodStreak] = useState(0);
   const [badStreak, setBadStreak] = useState(0);
   const [lastQuestions, setLastQuestions] = useState([]);
@@ -50,21 +49,7 @@ function ExercisesContent() {
     return array[Math.floor(Math.random() * array.length)];
   }
 
-  function generateMath(level) {
-    const max = level * 10;
-    const a = Math.floor(Math.random() * max);
-    const b = Math.floor(Math.random() * max);
-
-    return {
-      type: "math",
-      instruction: "Résous le calcul :",
-      question: `${a} + ${b} = ?`,
-      answer: String(a + b),
-      image: null,
-    };
-  }
-
-function generateExercise(level, profil) {
+ function generateExercise(level, profil) {
   const randomWord = randomItem(words);
 
   const imageLibrary = {
@@ -391,28 +376,40 @@ useEffect(() => {
 
 if (isCorrect) {
   setScore((prev) => prev + 1);
-  setFeedback("Bonne réponse 👍");
 
-  setGoodStreak((prev) => prev + 1);
+  const newGoodStreak = goodStreak + 1;
+
+  setGoodStreak(newGoodStreak);
   setBadStreak(0);
 
-  if (goodStreak >= 4) {
+  if (newGoodStreak >= 5) {
     setDifficulty((prev) => prev + 1);
     setGoodStreak(0);
     setFeedback("Excellent 🎯 Difficulté augmentée");
+  } else {
+    setFeedback("Bonne réponse 👍");
   }
 } else {
-  setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+  const newBadStreak = badStreak + 1;
 
-  setBadStreak((prev) => prev + 1);
+  setBadStreak(newBadStreak);
   setGoodStreak(0);
+
+  if (newBadStreak >= 3) {
+    setDifficulty((prev) => Math.max(1, prev - 1));
+    setBadStreak(0);
+    setFeedback("On simplifie un peu 🧠");
+  } else {
+    setFeedback(`Bonne réponse : ${currentExercise.answer}`);
+  }
+}
 
   if (badStreak >= 2) {
     setDifficulty((prev) => Math.max(1, prev - 1));
     setBadStreak(0);
     setFeedback("On simplifie un peu 🧠");
   }
-}
+};
 
   const nextExercise = () => {
     setExerciseIndex((prev) => prev + 1);
