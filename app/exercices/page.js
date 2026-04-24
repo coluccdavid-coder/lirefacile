@@ -29,52 +29,110 @@ function ExercisesContent() {
   const exercises = {
     AVC: {
       1: [
-        { q: "Je bois de l'_____", a: "eau" },
-        { q: "Je lis un _____", a: "livre" },
-        { q: "Je vois un _____", a: "chat" },
+        {
+          q: "Je vois un _____",
+          a: "chat",
+          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+        },
+        {
+          q: "Je mange une _____",
+          a: "pomme",
+          img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+        },
+        {
+          q: "Je lis un _____",
+          a: "livre",
+          img: "https://images.unsplash.com/photo-1512820790803-83ca734da794",
+        },
       ],
+
       2: [
-        { q: "Le chat dort sur le _____", a: "canapé" },
-        { q: "Je mange une pomme _____", a: "rouge" },
+        {
+          q: "Le chat dort sur le _____",
+          a: "canapé",
+          img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
+        },
+        {
+          q: "Je mange une pomme _____",
+          a: "rouge",
+          img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce",
+        },
       ],
+
       3: [
         {
-          q: "Le petit garçon joue avec un _____ dans le jardin",
+          q: "Le garçon joue avec un _____ dans le jardin",
           a: "ballon",
+          img: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68",
         },
       ],
+
       4: [
         {
-          q: "Chaque matin je prends mon café avant d'aller au _____",
+          q: "Chaque matin je prends un café avant d'aller au _____",
           a: "travail",
+          img: "https://images.unsplash.com/photo-1521791136064-7986c2920216",
         },
       ],
+
       5: [
         {
-          q: "Après avoir mangé je range les assiettes dans le _____",
+          q: "Après le repas je range les assiettes dans le _____",
           a: "placard",
+          img: "https://images.unsplash.com/photo-1556911220-bff31c812dba",
         },
       ],
     },
 
     Dyslexie: {
       1: [
-        { q: "chat", a: "chat" },
-        { q: "soleil", a: "soleil" },
+        {
+          q: "chat",
+          a: "chat",
+          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+        },
+        {
+          q: "soleil",
+          a: "soleil",
+          img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        },
       ],
+
       2: [
-        { q: "maison", a: "maison" },
-        { q: "voiture", a: "voiture" },
+        {
+          q: "maison",
+          a: "maison",
+          img: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
+        },
+        {
+          q: "voiture",
+          a: "voiture",
+          img: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+        },
       ],
+
       3: [
-        { q: "ordinateur", a: "ordinateur" },
-        { q: "papillon", a: "papillon" },
+        {
+          q: "ordinateur",
+          a: "ordinateur",
+          img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+        },
       ],
+
       4: [
-        { q: "Le chat dort", a: "chat" },
+        {
+          q: "Le chat dort",
+          a: "chat",
+          img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+        },
       ],
+
       5: [
-        { q: "Le garçon joue dans le jardin", a: "garçon" },
+        {
+          q: "Le garçon joue dans le jardin",
+          a: "garçon",
+          img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9",
+        },
       ],
     },
 
@@ -128,73 +186,24 @@ function ExercisesContent() {
       type: profil,
       instruction:
         profil === "AVC"
-          ? "Complète la phrase :"
+          ? "Complète la phrase avec l'image"
           : profil === "Dyslexie"
-          ? "Lis puis écris :"
+          ? "Lis puis écris"
           : profil === "Mémoire"
-          ? "Mémorise :"
+          ? "Mémorise"
           : profil === "Math"
-          ? "Résous le calcul :"
-          : "Trouve la réponse :",
+          ? "Résous le calcul"
+          : "Trouve la réponse",
       question: selected.q,
       answer: selected.a,
+      image: selected.img || null,
     };
   }
-
-  useEffect(() => {
-    const saved = localStorage.getItem("progress");
-
-    if (saved) {
-      const data = JSON.parse(saved);
-
-      setScore(data.score || 0);
-      setExerciseIndex(data.exerciseIndex || 0);
-      setDifficulty(data.difficulty || 1);
-      setEnergy(data.energy || 100);
-    }
-  }, []);
 
   useEffect(() => {
     const newExercise = generateExercise(currentLevel, profil);
     setCurrentExercise(newExercise);
   }, [exerciseIndex, profil]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "progress",
-      JSON.stringify({
-        score,
-        exerciseIndex,
-        difficulty,
-        energy,
-      })
-    );
-  }, [score, exerciseIndex, difficulty, energy]);
-
-  useEffect(() => {
-    if (!currentExercise) return;
-
-    if (profil === "Mémoire") {
-      setShowQuestion(true);
-      setTimer(10);
-
-      const interval = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setShowQuestion(false);
-            return 0;
-          }
-
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-
-    setShowQuestion(true);
-  }, [currentExercise]);
 
   const normalizeText = (text) =>
     text
@@ -209,12 +218,7 @@ function ExercisesContent() {
     const userAnswer = normalizeText(answer);
     const correctAnswer = normalizeText(currentExercise.answer);
 
-    const isCorrect =
-      profil === "Mémoire"
-        ? userAnswer === correctAnswer
-        : userAnswer === correctAnswer;
-
-    setEnergy((prev) => Math.max(0, prev - 2));
+    const isCorrect = userAnswer === correctAnswer;
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -228,9 +232,6 @@ function ExercisesContent() {
         setDifficulty((prev) => Math.min(prev + 1, 5));
         setGoodStreak(0);
       }
-
-      if (score + 1 === 10) setBadge("🌟 Débutant");
-      if (score + 1 === 25) setBadge("🏆 Expert");
 
       setFeedback("Bonne réponse 👍");
     } else {
@@ -256,30 +257,6 @@ function ExercisesContent() {
     setFeedback("");
   };
 
-  const speakText = (text) => {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "fr-FR";
-    speech.rate = 0.85;
-    window.speechSynthesis.speak(speech);
-  };
-
-  const startVoiceRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "fr-FR";
-
-    recognition.onresult = (event) => {
-      setAnswer(event.results[0][0].transcript);
-    };
-
-    recognition.start();
-  };
-
   const progress = ((exerciseIndex % 10) / 10) * 100;
 
   if (!currentExercise) return null;
@@ -289,26 +266,6 @@ function ExercisesContent() {
       <div className="main-card">
         <h1 className="main-title">Exercices {profil}</h1>
 
-        <div className="button-row">
-          <button onClick={() => setDarkMode(!darkMode)}>
-            🌙 Mode sombre
-          </button>
-
-          <button
-            onClick={() =>
-              speakText(
-                `${currentExercise.instruction} ${currentExercise.question}`
-              )
-            }
-          >
-            Lire 🔊
-          </button>
-
-          <button onClick={startVoiceRecognition}>
-            Répondre 🎤
-          </button>
-        </div>
-
         <div className="progress-container">
           <div
             className="progress-bar"
@@ -316,40 +273,33 @@ function ExercisesContent() {
           />
         </div>
 
-        <div className="energy-bar-container">
-          <div
-            className="energy-bar"
-            style={{ width: `${energy}%` }}
-          />
-        </div>
-
         <div className="exercise-box">
           <div className="instruction-box">
-            <span className="instruction-label">Consigne</span>
-            <h3 className="instruction-text">
-              {currentExercise.instruction}
-            </h3>
+            <span>Consigne</span>
+            <h3>{currentExercise.instruction}</h3>
           </div>
 
-          <h2 className="exercise-question">
-            {showQuestion
-              ? currentExercise.question
-              : "Quels étaient les mots ?"}
-          </h2>
-
-          {profil === "Mémoire" && showQuestion && (
-            <div>Temps restant : {timer}s</div>
+          {currentExercise.image && (
+            <div style={{ textAlign: "center", marginBottom: "25px" }}>
+              <img
+                src={currentExercise.image}
+                alt="indice"
+                style={{
+                  width: "240px",
+                  height: "240px",
+                  objectFit: "cover",
+                  borderRadius: "20px",
+                }}
+              />
+            </div>
           )}
+
+          <h2>{currentExercise.question}</h2>
 
           <input
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                checkAnswer();
-              }
-            }}
             placeholder="Écris ta réponse"
             className="exercise-input"
           />
@@ -365,8 +315,6 @@ function ExercisesContent() {
         <div className="feedback-box">
           <h2>{feedback}</h2>
         </div>
-
-        {badge && <div className="badge-box">{badge}</div>}
 
         <div className="score-box">
           Score : {score} | Niveau : {currentLevel} |
