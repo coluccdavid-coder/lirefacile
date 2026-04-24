@@ -229,6 +229,3 @@ export default function ExercisesPage() {
     </div>
   );
 }
-
-http://localhost:3000/exercices
-```
