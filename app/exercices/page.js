@@ -164,7 +164,7 @@ function ExercisesContent() {
         instruction: "Trouve le nombre suivant :",
         question: "2, 4, 6, 8, ___",
         answer: "10",
-        image, null,
+        image: null,
       };
     }
 
