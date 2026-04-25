@@ -1,13 +1,40 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 export default function HomePage() {
   const router = useRouter();
+  const fileInputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      alert("PDF ajouté à la mémoire IA ✅");
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+      alert("Erreur upload PDF");
+    }
+  };
 
   return (
     <div className="page-container">
       <div className="main-card fade-in">
+
         <h1 className="main-title">LireFacile</h1>
 
         <p className="subtitle">
@@ -23,6 +50,7 @@ export default function HomePage() {
         </div>
 
         <div className="cards-grid">
+
           <div
             className="feature-card"
             onClick={() => router.push("/evaluation-complete")}
@@ -46,9 +74,11 @@ export default function HomePage() {
             <h3>Exercices</h3>
             <p>Lance les exercices adaptés.</p>
           </div>
+
         </div>
 
         <div className="button-row">
+
           <button
             className="primary-button avc-button"
             onClick={() => router.push("/exercices-avc")}
@@ -62,7 +92,24 @@ export default function HomePage() {
           >
             Exercices Dys
           </button>
+
+          <button
+            className="primary-button warning-button"
+            onClick={() => fileInputRef.current.click()}
+          >
+            Ajouter PDF IA
+          </button>
+
         </div>
+
+        <input
+          type="file"
+          accept=".pdf"
+          ref={fileInputRef}
+          onChange={handleUpload}
+          style={{ display: "none" }}
+        />
+
       </div>
     </div>
   );
