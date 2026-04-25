@@ -1,84 +1,144 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function MemoireAVCPage() {
   const router = useRouter();
 
+const exercises = [
+    {
+      words: "arbre — maison — soleil",
+      answer: ["arbre", "maison", "soleil"],
+    },
+    {
+      words: "chat — vélo — livre",
+      answer: ["chat", "vélo", "livre"],
+    },
+    {
+      words: "clé — fenêtre — pomme",
+      answer: ["clé", "fenêtre", "pomme"],
+    },
+  ];
+
+const [step, setStep] = useState(0);
   const [showWords, setShowWords] = useState(true);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [score, setScore] = useState(0);
 
-  const words = "chat — livre — soleil";
+const current = exercises[step];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+useEffect(() => {
+    setShowWords(true);
+
+const timer = setTimeout(() => {
       setShowWords(false);
     }, 4000);
 
-    return () => clearTimeout(timer);
-  }, []);
+return () => clearTimeout(timer);
+  }, [step]);
 
-  const verify = () => {
+const verifyAnswer = () => {
     const normalized = answer.toLowerCase();
 
-    if (
-      normalized.includes("chat") &&
-      normalized.includes("livre") &&
-      normalized.includes("soleil")
-    ) {
-      setFeedback("✅ Très bonne mémoire");
+const correct = current.answer.every((word) =>
+      normalized.includes(word)
+    );
+
+if (correct) {
+      setFeedback("✅ Bonne mémoire");
+      setScore((prev) => prev + 1);
     } else {
-      setFeedback("❌ Réponse attendue : chat livre soleil");
+      setFeedback(
+        `❌ Réponse attendue : ${current.answer.join(", ")}`
+      );
     }
   };
 
-  return (
+const nextExercise = () => {
+    setAnswer("");
+    setFeedback("");
+
+if (step < exercises.length - 1) {
+      setStep((prev) => prev + 1);
+    } else {
+      router.push("/exercices-avc");
+    }
+  };
+
+return (
     <div className="page-container">
-      <div className="main-card">
+      <div className="main-card fade-in">
 
-        <h1 className="main-title">Mémoire AVC</h1>
+<h1 className="main-title">
+          Mémoire AVC
+        </h1>
 
-        <div className="exercise-card">
+<div className="progress-container">
+          <div
+            className="progress-bar"
+            style={{
+              width: `${((step + 1) / exercises.length) * 100}%`,
+            }}
+          />
+        </div>
 
-          <div className="exercise-question">
+<div className="exercise-card">
+
+<div className="exercise-title">
+            Exercice {step + 1} / {exercises.length}
+          </div>
+
+<div className="exercise-question">
             {showWords
-              ? words
+              ? `Retiens : ${current.words}`
               : "Quels étaient les mots ?"}
           </div>
 
-          <input
+<input
             className="exercise-input"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Écris les mots"
+            placeholder="Écris les mots retenus"
           />
 
-          <div className="button-row">
+<div
+            className="button-row"
+            style={{ justifyContent: "center", marginTop: "30px" }}
+          >
             <button
               className="primary-button"
-              onClick={verify}
+              onClick={verifyAnswer}
             >
               Vérifier
             </button>
 
-            <button
+<button
               className="primary-button success-button"
-              onClick={() => router.push("/exercices-avc")}
+              onClick={nextExercise}
             >
-              Retour
+              {step === exercises.length - 1
+                ? "Terminer"
+                : "Suivant"}
             </button>
           </div>
 
-          {feedback && (
+{feedback && (
             <div className="feedback-box">
               {feedback}
             </div>
           )}
-        </div>
 
-      </div>
+<div className="score-box">
+            Score : {score} / {exercises.length}
+          </div>
+
+</div>
+
+</div>
     </div>
   );
 }
+
+
