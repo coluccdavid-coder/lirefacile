@@ -8,41 +8,56 @@ export default function LangageAVCPage() {
 
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [score, setScore] = useState(0);
 
-  const verify = () => {
-    if (answer.toLowerCase().includes("bonjour")) {
+  const verifyAnswer = () => {
+    const normalized = answer.toLowerCase().trim();
+
+    if (
+      normalized.includes("lait")
+    ) {
       setFeedback("✅ Bonne réponse");
+      setScore(1);
     } else {
-      setFeedback("❌ Essaie encore");
+      setFeedback("❌ Réponse attendue : lait");
     }
   };
 
   return (
     <div className="page-container">
-      <div className="main-card">
+      <div className="main-card fade-in">
 
-        <h1 className="main-title">Langage AVC</h1>
+        <h1 className="main-title">
+          Langage AVC
+        </h1>
 
         <div className="exercise-card">
+
           <div className="exercise-title">
             Rééducation du langage
           </div>
 
           <div className="exercise-question">
-            Écris un mot de salutation
+            Complète : Le chat boit du _____
           </div>
 
           <input
             className="exercise-input"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Écris ici"
+            placeholder="Écris ta réponse"
           />
 
-          <div className="button-row">
+          <div
+            className="button-row"
+            style={{
+              justifyContent: "center",
+              marginTop: "30px",
+            }}
+          >
             <button
               className="primary-button"
-              onClick={verify}
+              onClick={verifyAnswer}
             >
               Vérifier
             </button>
@@ -51,7 +66,7 @@ export default function LangageAVCPage() {
               className="primary-button success-button"
               onClick={() => router.push("/exercices-avc")}
             >
-              Retour
+              Retour AVC
             </button>
           </div>
 
@@ -60,6 +75,11 @@ export default function LangageAVCPage() {
               {feedback}
             </div>
           )}
+
+          <div className="score-box">
+            Score : {score} / 1
+          </div>
+
         </div>
 
       </div>
