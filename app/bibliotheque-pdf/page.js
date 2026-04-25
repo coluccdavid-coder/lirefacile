@@ -113,6 +113,10 @@ export default function BibliothequePDFPage() {
 
     if (data.success) {
       setGeneratedExercises(data.exercises);
+      localStorage.setItem(
+  "aiGeneratedExercises",
+  JSON.stringify(data.exercises)
+);
 
       const speciality = detectSpeciality(file.name);
 
