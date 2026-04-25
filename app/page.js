@@ -5,24 +5,24 @@ import { useRouter } from "next/navigation";
 export default function HomePage() {
   const router = useRouter();
 
-return (
+  return (
     <div className="page-container">
       <div className="main-card fade-in">
         <h1 className="main-title">LireFacile</h1>
 
-<p className="subtitle">
+        <p className="subtitle">
           Plateforme IA pour AVC, Dyslexie, Rééducation Cognitive et Orthophonie.
         </p>
 
-<div className="assistant-box">
+        <div className="assistant-box">
           <div className="assistant-avatar">🧠</div>
 
-<div className="assistant-message">
+          <div className="assistant-message">
             Bienvenue. L’IA analyse le profil et adapte les exercices.
           </div>
         </div>
 
-<div className="cards-grid">
+        <div className="cards-grid">
           <div
             className="feature-card"
             onClick={() => router.push("/evaluation-complete")}
@@ -31,7 +31,7 @@ return (
             <p>Lance la vraie évaluation cognitive.</p>
           </div>
 
-<div
+          <div
             className="feature-card"
             onClick={() => router.push("/profil")}
           >
@@ -39,7 +39,7 @@ return (
             <p>Consulte le profil généré.</p>
           </div>
 
-<div
+          <div
             className="feature-card"
             onClick={() => router.push("/exercices")}
           >
@@ -48,7 +48,7 @@ return (
           </div>
         </div>
 
-<div className="button-row">
+        <div className="button-row">
           <button
             className="primary-button avc-button"
             onClick={() => router.push("/exercices-avc")}
@@ -56,7 +56,7 @@ return (
             Exercices AVC
           </button>
 
-<button
+          <button
             className="primary-button dys-button"
             onClick={() => router.push("/exercices-dys")}
           >
@@ -67,4 +67,3 @@ return (
     </div>
   );
 }
-
