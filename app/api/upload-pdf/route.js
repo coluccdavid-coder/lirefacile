@@ -1,18 +1,32 @@
 import { NextResponse } from "next/server";
+import pdfParse from "pdf-parse";
 
 export async function POST(req) {
-  const data = await req.formData();
-  const file = data.get("file");
+  try {
+    const formData = await req.formData();
 
-  if (!file) {
-    return NextResponse.json(
-      { error: "Aucun PDF reçu" },
-      { status: 400 }
-    );
+    const file = formData.get("file");
+
+    if (!file) {
+      return NextResponse.json({
+        success: false,
+        error: "Aucun PDF",
+      });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const pdf = await pdfParse(buffer);
+
+    return NextResponse.json({
+      success: true,
+      text: pdf.text,
+    });
+  } catch (error) {
+    return NextResponse.json({
+      success: false,
+      error: "Erreur lecture PDF",
+    });
   }
-
-  return NextResponse.json({
-    success: true,
-    fileName: file.name,
-  });
 }
