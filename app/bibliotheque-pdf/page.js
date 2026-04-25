@@ -81,10 +81,62 @@ export default function BibliothequePDFPage() {
     await generateSummary(file.name);
   };
 
-  const generateSummary = async (fileName) => {
-    const fakeText = `
-      mémoire langage attention orthophonie AVC dyslexie
-    `;
+ const generateSummary = async (file) => {
+  try {
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const pdfResponse = await fetch("/api/upload-pdf", {
+      method: "POST",
+      body: formData,
+    });
+
+    const pdfData = await pdfResponse.json();
+
+    if (!pdfData.success) {
+      setSummary("Erreur lecture PDF");
+      return;
+    }
+
+    const response = await fetch("/api/analyse-pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: pdfData.text,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setGeneratedExercises(data.exercises);
+
+      const speciality = detectSpeciality(file.name);
+
+      const generatedText = data.exercises
+        .map(
+          (ex) =>
+            `• ${ex.type.toUpperCase()} → ${ex.question}`
+        )
+        .join("\n");
+
+      setSummary(`
+L’IA a analysé : ${file.name}
+
+Spécialité détectée : ${speciality}
+
+Exercices générés automatiquement :
+
+${generatedText}
+      `);
+    }
+  } catch (error) {
+    setSummary("Erreur IA.");
+  }
+};
 
     try {
       const response = await fetch("/api/analyse-pdf", {
