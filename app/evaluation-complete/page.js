@@ -1,17 +1,13 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
 export default function EvaluationCompletePage() {
   const router = useRouter();
-
 const [step, setStep] = useState(0);
   const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [showMemoryWords, setShowMemoryWords] = useState(true);
-
 const tests = [
     {
       type: "memoire",
@@ -94,28 +90,22 @@ const tests = [
   ];
 
 const current = tests[step];
-
 useEffect(() => {
     if (current.memory) {
       setShowMemoryWords(true);
-
 const timer = setTimeout(() => {
         setShowMemoryWords(false);
       }, 4000);
-
 return () => clearTimeout(timer);
     }
   }, [step]);
-
 const verifyAnswer = () => {
     const normalized = answer
       .toLowerCase()
       .trim();
-
 const expected = current.answer
       .toLowerCase()
       .trim();
-
 if (normalized.includes(expected)) {
       setFeedback("✅ Bonne réponse");
       setScore((prev) => prev + 1);
@@ -123,20 +113,16 @@ if (normalized.includes(expected)) {
       setFeedback(`❌ Réponse attendue : ${current.answer}`);
     }
   };
-
 const nextStep = () => {
     setAnswer("");
     setFeedback("");
-
 if (step < tests.length - 1) {
       setStep((prev) => prev + 1);
       return;
     }
-
 const finalPercent = Math.round(
       (score / tests.length) * 100
     );
-
 const evaluation = {
       memory: score < 8,
       attention: score < 9,
@@ -144,7 +130,6 @@ const evaluation = {
       reading: score < 9,
       score: finalPercent,
     };
-
 localStorage.setItem(
       "evaluation",
       JSON.stringify(evaluation)
