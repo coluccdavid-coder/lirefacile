@@ -295,3 +295,14 @@ body {
   margin-top: 35px;
   flex-wrap: wrap;
 }
+/* CARTE CLIQUABLE */
+
+.clickable-card {
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
