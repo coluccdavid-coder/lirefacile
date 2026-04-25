@@ -1,68 +1,76 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+export default function EvaluationPage() {
+  const [patient, setPatient] = useState(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [answer, setAnswer] = useState("");
+
+  const [results, setResults] = useState({
+    memory: 0,
+    attention: 0,
+    reading: 0,
+    dyslexia: 0,
+  });
+
+  useEffect(() => {
+    const stored = JSON.parse(
+      localStorage.getItem("patientProfile")
     );
+
+    setPatient(stored);
+  }, []);
+
+  if (!patient) {
+    return <p style={{ padding: 40 }}>Chargement...</p>;
   }
 
-  return (
-    <div
-      className={`page-container ${
+  const questions = [
+    {
+      question:
         patient.pathology === "Dyslexie"
-          ? "dyslexia-font"
-          : ""
-      }`}
-    >
-      <div className="main-card fade-in">
-        <h1 className="main-title">
-          Évaluation IA
-        </h1>
+          ? "Quel mot est correctement écrit ?"
+          : "Répète cette suite : Chat - Soleil - Maison",
 
-        <div className="assistant-box">
-          <div className="assistant-avatar">🧠</div>
+      choices:
+        patient.pathology === "Dyslexie"
+          ? ["Aureau", "Oiseau", "Oiso", "Oisseau"]
+          : [],
 
-          <div className="assistant-message">
-            L’IA adapte le test selon votre profil.
-          </div>
-        </div>
+      type:
+        patient.pathology === "Dyslexie"
+          ? "dys"
+          : "memory",
+    },
 
-        <div className="exercise-card">
-          <div className="exercise-title">
-            Question {questionIndex + 1}
-          </div>
+    {
+      question:
+        patient.age > 65
+          ? "Quel jour sommes-nous ?"
+          : "Combien font 8 + 5 ?",
 
-          <div className="exercise-question">
-            {currentQuestion.question}
-          </div>
+      type:
+        patient.age > 65
+          ? "orientation"
+          : "logic",
+    },
 
-          {currentQuestion.choices?.length > 0 ? (
-            <div className="button-row">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice}
-                  className="primary-button"
-                  onClick={() => setAnswer(choice)}
-                >
-                  {choice}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <input
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              className="exercise-input"
-              placeholder="Votre réponse"
-            />
-          )}
-        </div>
+    {
+      question:
+        patient.learningStyle === "Visuel"
+          ? "Que vois-tu sur cette image ?"
+          : "Complète : Le chat boit du ____",
 
-        <div className="button-row">
-          <button
-            className="primary-button success-button"
-            onClick={nextQuestion}
-          >
-            Continuer
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+      type: "reading",
+    },
+  ];
+
+  const currentQuestion = questions[questionIndex];
+
+  const nextQuestion = () => {
+    const updatedResults = { ...results };
+
 }
