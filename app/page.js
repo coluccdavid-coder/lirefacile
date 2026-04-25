@@ -1,27 +1,18 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
-  return (
+  const router = useRouter();
+
+return (
     <div className="page-container">
       <div className="main-card fade-in">
+        <h1 className="main-title">LireFacile</h1>
 
-<h1 className="main-title">
-          LireFacile
-        </h1>
-
-<div
-          style={{
-            textAlign: "center",
-            marginBottom: "30px",
-            color: "#64748b",
-            fontSize: "22px",
-          }}
-        >
-          Plateforme IA pour AVC, Dyslexie,
-          Rééducation Cognitive et Orthophonie.
-        </div>
+<p className="subtitle">
+          Plateforme IA pour AVC, Dyslexie, Rééducation Cognitive et Orthophonie.
+        </p>
 
 <div className="assistant-box">
           <div className="assistant-avatar">🧠</div>
@@ -31,101 +22,48 @@ export default function HomePage() {
           </div>
         </div>
 
-<div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "25px",
-            marginTop: "40px",
-          }}
-        >
-
-<Link href="/evaluation-complete">
-            <div className="analysis-card clickable-card">
-              <div className="analysis-title">
-                Évaluation IA
-              </div>
+<div className="cards-grid">
+          <div
+            className="feature-card"
+            onClick={() => router.push("/evaluation-complete")}
+          >
+            <h3>Évaluation IA</h3>
+            <p>Lance la vraie évaluation cognitive.</p>
+          </div>
 
 <div
-                style={{
-                  marginTop: "15px",
-                  color: "#64748b",
-                  lineHeight: "1.8",
-                }}
-              >
-                Lance la vraie évaluation cognitive.
-              </div>
-            </div>
-          </Link>
-
-<Link href="/profil">
-            <div className="analysis-card clickable-card">
-              <div className="analysis-title">
-                Profil Cognitif
-              </div>
+            className="feature-card"
+            onClick={() => router.push("/profil")}
+          >
+            <h3>Profil Cognitif</h3>
+            <p>Consulte le profil généré.</p>
+          </div>
 
 <div
-                style={{
-                  marginTop: "15px",
-                  color: "#64748b",
-                  lineHeight: "1.8",
-                }}
-              >
-                Consulte le profil généré.
-              </div>
-            </div>
-          </Link>
+            className="feature-card"
+            onClick={() => router.push("/exercices")}
+          >
+            <h3>Exercices</h3>
+            <p>Lance les exercices adaptés.</p>
+          </div>
+        </div>
 
-<Link href="/generation-exercices">
-            <div className="analysis-card clickable-card">
-              <div className="analysis-title">
-                Exercices
-              </div>
+<div className="button-row">
+          <button
+            className="primary-button avc-button"
+            onClick={() => router.push("/exercices-avc")}
+          >
+            Exercices AVC
+          </button>
 
-<div
-                style={{
-                  marginTop: "15px",
-                  color: "#64748b",
-                  lineHeight: "1.8",
-                }}
-              >
-                Lance les exercices adaptés.
-              </div>
-            </div>
-          </Link>
-
-</div>
-
-<div
-          className="button-row"
-          style={{
-            justifyContent: "center",
-            marginTop: "50px",
-            flexWrap: "wrap",
-          }}
-        >
-
-<Link href="/memoire-ia">
-            <button className="primary-button success-button">
-              Mémoire IA
-            </button>
-          </Link>
-
-<Link href="/bibliotheque-pdf">
-            <button className="primary-button warning-button">
-              PDF Thérapeutiques
-            </button>
-          </Link>
-
-<Link href="/fatigue-ia">
-            <button className="primary-button">
-              Fatigue Cognitive
-            </button>
-          </Link>
-
-</div>
-
-</div>
+<button
+            className="primary-button dys-button"
+            onClick={() => router.push("/exercices-dys")}
+          >
+            Exercices Dys
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
