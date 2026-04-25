@@ -1,66 +1,67 @@
 "use client";
+    );
+  }
 
-import Link from "next/link";
-
-export default function EvaluationPage() {
   return (
-    <div className="page-container">
+    <div
+      className={`page-container ${
+        patient.pathology === "Dyslexie"
+          ? "dyslexia-font"
+          : ""
+      }`}
+    >
       <div className="main-card fade-in">
-
         <h1 className="main-title">
-          Évaluation Cognitive
+          Évaluation IA
         </h1>
 
-        <div className="analysis-box">
-          <div className="analysis-title">
-            Analyse Terminée
+        <div className="assistant-box">
+          <div className="assistant-avatar">🧠</div>
+
+          <div className="assistant-message">
+            L’IA adapte le test selon votre profil.
+          </div>
+        </div>
+
+        <div className="exercise-card">
+          <div className="exercise-title">
+            Question {questionIndex + 1}
           </div>
 
-          <p
-            style={{
-              fontSize: "22px",
-              lineHeight: "1.8",
-              marginBottom: "25px",
-            }}
-          >
-            L’IA pourra maintenant adapter les exercices selon :
-          </p>
+          <div className="exercise-question">
+            {currentQuestion.question}
+          </div>
 
-          <ul
-            style={{
-              fontSize: "22px",
-              lineHeight: "2.2",
-              paddingLeft: "25px",
-            }}
-          >
-            <li>Mémoire</li>
-            <li>Lecture</li>
-            <li>Écriture</li>
-            <li>Fatigue</li>
-            <li>Parole</li>
-          </ul>
+          {currentQuestion.choices?.length > 0 ? (
+            <div className="button-row">
+              {currentQuestion.choices.map((choice) => (
+                <button
+                  key={choice}
+                  className="primary-button"
+                  onClick={() => setAnswer(choice)}
+                >
+                  {choice}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <input
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              className="exercise-input"
+              placeholder="Votre réponse"
+            />
+          )}
         </div>
 
-        <div
-          className="button-row"
-          style={{
-            justifyContent: "center",
-            marginTop: "35px",
-          }}
-        >
-          <Link href="/profil">
-            <button className="primary-button success-button">
-              Voir mon profil IA
-            </button>
-          </Link>
-
-          <Link href="/">
-            <button className="primary-button">
-              Retour accueil
-            </button>
-          </Link>
+        <div className="button-row">
+          <button
+            className="primary-button success-button"
+            onClick={nextQuestion}
+          >
+            Continuer
+          </button>
         </div>
-
       </div>
     </div>
   );
