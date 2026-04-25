@@ -11,7 +11,7 @@ const tests = [
     {
       type: "memoire",
       question: "Retiens ces mots : chat — soleil — pomme",
-      helper: "Écris les 3 mots.",
+      helper: "Écris les 3 mots dans le bon ordre.",
       answer: "chat soleil pomme",
     },
     {
@@ -28,8 +28,8 @@ const tests = [
     },
     {
       type: "langage",
-      question: "Que vois-tu dans une cuisine ?",
-      helper: "Écris un objet.",
+      question: "Écris un objet que l’on trouve dans une cuisine",
+      helper: "Exemple : table, chaise, verre…",
       answer: "table",
     },
     {
@@ -51,7 +51,7 @@ const expected = current.answer
       .trim();
 if (normalized.includes(expected)) {
       setFeedback("✅ Bonne réponse");
-      setScore(score + 1);
+      setScore((prev) => prev + 1);
     } else {
       setFeedback(
         `❌ Réponse attendue : ${current.answer}`
@@ -62,11 +62,11 @@ const nextStep = () => {
     setAnswer("");
     setFeedback("");
 if (step < tests.length - 1) {
-      setStep(step + 1);
+      setStep((prev) => prev + 1);
       return;
     }
 const finalPercent = Math.round(
-      ((score + 1) / tests.length) * 100
+      (score / tests.length) * 100
     );
 const evaluation = {
       memory: score >= 1,
@@ -82,7 +82,7 @@ localStorage.setItem(
 const history = JSON.parse(
       localStorage.getItem("sessionHistory")
     ) || [];
-const updated = [
+const updatedHistory = [
       ...history,
       {
         date: new Date().toLocaleDateString(),
@@ -90,22 +90,28 @@ const updated = [
         module: "Évaluation Cognitive",
       },
     ];
+
 localStorage.setItem(
       "sessionHistory",
-      JSON.stringify(updated)
+      JSON.stringify(updatedHistory)
     );
+
 router.push("/profil");
   };
+
 return (
     <div className="page-container">
       <div className="main-card fade-in">
+
 <h1 className="main-title">
-          Évaluation Cognitive Réelle
+          Évaluation Cognitive Interactive
         </h1>
+
 <div className="assistant-box">
           <div className="assistant-avatar">🧠</div>
+
 <div className="assistant-message">
-            L’IA analyse les capacités cognitives.
+            L’IA analyse progressivement le patient.
           </div>
         </div>
 
@@ -119,14 +125,19 @@ return (
             }}
           />
         </div>
+
 <div className="exercise-card">
+
 <div className="exercise-title">
             Test {step + 1} / {tests.length}
           </div>
+
 <div className="exercise-content">
+
 <div className="exercise-question">
               {current.question}
             </div>
+
 <div
               style={{
                 color: "#64748b",
@@ -135,6 +146,7 @@ return (
             >
               {current.helper}
             </div>
+
 {current.choices ? (
               <div
                 style={{
@@ -162,30 +174,40 @@ return (
                 className="exercise-input"
               />
             )}
+
 </div>
         </div>
+
 <div className="button-row">
-          <button
+
+<button
             className="primary-button"
             onClick={verifyAnswer}
           >
             Vérifier
           </button>
+
 <button
             className="primary-button success-button"
             onClick={nextStep}
           >
-            Suivant
+            {step === tests.length - 1
+              ? "Terminer"
+              : "Suivant"}
           </button>
-        </div>
+
+</div>
+
 {feedback && (
           <div className="feedback-box">
             {feedback}
           </div>
         )}
+
 <div className="score-box">
           Score : {score}
         </div>
+
 </div>
     </div>
   );
