@@ -1,49 +1,71 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
 export default function BibliothequePDFPage() {
   const [files, setFiles] = useState([]);
   const [summary, setSummary] = useState("");
-
+  const [iaKnowledge, setIaKnowledge] = useState([]);
 useEffect(() => {
-    const saved = JSON.parse(
-      localStorage.getItem("pdfLibrary")
-    ) || [];
-
+    const saved =
+      JSON.parse(localStorage.getItem("pdfLibrary")) || [];
 setFiles(saved);
+const knowledge = saved.map((pdf) => ({
+      source: pdf.name,
+      speciality: detectSpeciality(pdf.name),
+    }));
+setIaKnowledge(knowledge);
   }, []);
-
+const detectSpeciality = (name) => {
+    const lower = name.toLowerCase();
+if (
+      lower.includes("avc") ||
+      lower.includes("aphasie")
+    ) {
+      return "Rééducation AVC";
+    }
+if (
+      lower.includes("dys") ||
+      lower.includes("lecture")
+    ) {
+      return "Dyslexie";
+    }
+if (
+      lower.includes("memoire") ||
+      lower.includes("mémoire")
+    ) {
+      return "Mémoire Cognitive";
+    }
+return "Orthophonie Générale";
+  };
 const savePDF = (event) => {
     const file = event.target.files?.[0];
-
 if (!file) return;
-
 const newPDF = {
       name: file.name,
       size: Math.round(file.size / 1024),
       date: new Date().toLocaleDateString(),
       type: "PDF thérapeutique",
     };
-
 const updated = [...files, newPDF];
-
 setFiles(updated);
-
 localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updated)
     );
-
+const knowledge = updated.map((pdf) => ({
+      source: pdf.name,
+      speciality: detectSpeciality(pdf.name),
+    }));
+setIaKnowledge(knowledge);
 generateSummary(file.name);
   };
-
 const generateSummary = (fileName) => {
-    const text = `
+    const speciality = detectSpeciality(fileName);
+const text = `
 L’IA a analysé : ${fileName}
 
-Points potentiels :
+Spécialité détectée : ${speciality}
+Connaissances intégrées :
 - exercices mémoire
 - rééducation langage
 - lecture thérapeutique
@@ -51,6 +73,8 @@ Points potentiels :
 - orthophonie
 - récupération AVC
 - dyslexie
+- exercices personnalisés
+- adaptation cognitive
     `;
 
 setSummary(text);
@@ -67,6 +91,13 @@ localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updated)
     );
+
+const knowledge = updated.map((pdf) => ({
+      source: pdf.name,
+      speciality: detectSpeciality(pdf.name),
+    }));
+
+setIaKnowledge(knowledge);
   };
 
 return (
@@ -157,6 +188,36 @@ return (
           </div>
         </div>
 
+<div className="analysis-box">
+          <div className="analysis-title">
+            Connaissances IA Actives
+          </div>
+
+{iaKnowledge.length === 0 ? (
+            <p>Aucune connaissance IA chargée.</p>
+          ) : (
+            iaKnowledge.map((item, index) => (
+              <div
+                key={index}
+                className="analysis-card"
+                style={{ marginBottom: "14px" }}
+              >
+                <div className="analysis-label">
+                  Source utilisée
+                </div>
+
+<div className="analysis-value">
+                  {item.source}
+                </div>
+
+<div style={{ marginTop: "8px" }}>
+                  Domaine : {item.speciality}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
 <div
           className="button-row"
           style={{ justifyContent: "center" }}
@@ -184,4 +245,3 @@ return (
     </div>
   );
 }
-
