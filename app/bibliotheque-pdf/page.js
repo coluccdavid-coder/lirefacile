@@ -9,166 +9,140 @@ export default function BibliothequePDFPage() {
   const [iaKnowledge, setIaKnowledge] = useState([]);
   const [generatedExercises, setGeneratedExercises] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
     const saved =
       JSON.parse(localStorage.getItem("pdfLibrary")) || [];
 
-    setFiles(saved);
+setFiles(saved);
 
-    const knowledge = saved.map((pdf) => ({
+const knowledge = saved.map((pdf) => ({
       source: pdf.name,
       speciality: detectSpeciality(pdf.name),
     }));
 
-    setIaKnowledge(knowledge);
+setIaKnowledge(knowledge);
+
+const storedExercises =
+      JSON.parse(
+        localStorage.getItem("aiGeneratedExercises")
+      ) || [];
+
+setGeneratedExercises(storedExercises);
   }, []);
 
-  const detectSpeciality = (name) => {
+const detectSpeciality = (name) => {
     const lower = name.toLowerCase();
 
-    if (
+if (
       lower.includes("avc") ||
       lower.includes("aphasie")
     ) {
       return "Rééducation AVC";
     }
 
-    if (
+if (
       lower.includes("dys") ||
       lower.includes("lecture")
     ) {
       return "Dyslexie";
     }
 
-    if (
+if (
       lower.includes("memoire") ||
       lower.includes("mémoire")
     ) {
       return "Mémoire Cognitive";
     }
 
-    return "Orthophonie Générale";
+return "Orthophonie Générale";
   };
 
-  const savePDF = async (event) => {
+const savePDF = async (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) return;
+if (!file) return;
 
-    const newPDF = {
+const newPDF = {
       name: file.name,
       size: Math.round(file.size / 1024),
       date: new Date().toLocaleDateString(),
       type: "PDF thérapeutique",
     };
 
-    const updated = [...files, newPDF];
+const updated = [...files, newPDF];
 
-    setFiles(updated);
+setFiles(updated);
 
-    localStorage.setItem(
+localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updated)
     );
 
-    const knowledge = updated.map((pdf) => ({
+const knowledge = updated.map((pdf) => ({
       source: pdf.name,
       speciality: detectSpeciality(pdf.name),
     }));
 
-    setIaKnowledge(knowledge);
+setIaKnowledge(knowledge);
 
-    await generateSummary(file.name);
+await generateSummary(file);
   };
 
- const generateSummary = async (file) => {
-  try {
-    const formData = new FormData();
-
-    formData.append("file", file);
-
-    const pdfResponse = await fetch("/api/upload-pdf", {
-      method: "POST",
-      body: formData,
-    });
-
-    const pdfData = await pdfResponse.json();
-
-    if (!pdfData.success) {
-      setSummary("Erreur lecture PDF");
-      return;
-    }
-
-    const response = await fetch("/api/analyse-pdf", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: pdfData.text,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      setGeneratedExercises(data.exercises);
-      localStorage.setItem(
-  "aiGeneratedExercises",
-  JSON.stringify(data.exercises)
-);
-
-      const speciality = detectSpeciality(file.name);
-
-      const generatedText = data.exercises
-        .map(
-          (ex) =>
-            `• ${ex.type.toUpperCase()} → ${ex.question}`
-        )
-        .join("\n");
-
-      setSummary(`
-L’IA a analysé : ${file.name}
-
-Spécialité détectée : ${speciality}
-
-Exercices générés automatiquement :
-
-${generatedText}
-      `);
-    }
-  } catch (error) {
-    setSummary("Erreur IA.");
-  }
-};
-
+const generateSummary = async (file) => {
     try {
-      const response = await fetch("/api/analyse-pdf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: fakeText,
-        }),
-      });
+      const formData = new FormData();
 
-      const data = await response.json();
+formData.append("file", file);
 
-      if (data.success) {
+const pdfResponse = await fetch(
+        "/api/upload-pdf",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+const pdfData = await pdfResponse.json();
+
+if (!pdfData.success) {
+        setSummary("Erreur lecture PDF");
+        return;
+      }
+
+const response = await fetch(
+        "/api/analyse-pdf",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: pdfData.text,
+          }),
+        }
+      );
+
+const data = await response.json();
+
+if (data.success) {
         setGeneratedExercises(data.exercises);
 
-        const speciality = detectSpeciality(fileName);
+localStorage.setItem(
+          "aiGeneratedExercises",
+          JSON.stringify(data.exercises)
+        );
 
-        const generatedText = data.exercises
+const speciality = detectSpeciality(file.name);
+
+const generatedText = data.exercises
           .map(
             (ex) =>
               `• ${ex.type.toUpperCase()} → ${ex.question}`
           )
           .join("\n");
 
-        setSummary(`
-L’IA a analysé : ${fileName}
+setSummary(`
+L’IA a analysé : ${file.name}
 
 Spécialité détectée : ${speciality}
 
@@ -178,52 +152,53 @@ ${generatedText}
         `);
       }
     } catch (error) {
+      console.error(error);
       setSummary("Erreur IA.");
     }
   };
 
-  const deletePDF = (index) => {
+const deletePDF = (index) => {
     const updated = files.filter(
       (_, i) => i !== index
     );
 
-    setFiles(updated);
+setFiles(updated);
 
-    localStorage.setItem(
+localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updated)
     );
 
-    const knowledge = updated.map((pdf) => ({
+const knowledge = updated.map((pdf) => ({
       source: pdf.name,
       speciality: detectSpeciality(pdf.name),
     }));
 
-    setIaKnowledge(knowledge);
+setIaKnowledge(knowledge);
   };
 
-  return (
+return (
     <div className="page-container">
       <div className="main-card fade-in">
 
-        <h1 className="main-title">
+<h1 className="main-title">
           Bibliothèque PDF IA
         </h1>
 
-        <div className="assistant-box">
+<div className="assistant-box">
           <div className="assistant-avatar">📚</div>
 
-          <div className="assistant-message">
+<div className="assistant-message">
             Ajoute des PDF thérapeutiques pour enrichir l’IA.
           </div>
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Ajouter un document
           </div>
 
-          <input
+<input
             type="file"
             accept="application/pdf"
             onChange={savePDF}
@@ -231,12 +206,12 @@ ${generatedText}
           />
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Documents enregistrés
           </div>
 
-          {files.length === 0 ? (
+{files.length === 0 ? (
             <p>Aucun PDF ajouté.</p>
           ) : (
             files.map((file, index) => (
@@ -249,19 +224,19 @@ ${generatedText}
                   {file.type}
                 </div>
 
-                <div className="analysis-value">
+<div className="analysis-value">
                   {file.name}
                 </div>
 
-                <div style={{ marginTop: "10px" }}>
+<div style={{ marginTop: "10px" }}>
                   {file.size} KB
                 </div>
 
-                <div>
+<div>
                   Ajouté : {file.date}
                 </div>
 
-                <button
+<button
                   className="primary-button warning-button"
                   style={{ marginTop: "15px" }}
                   onClick={() => deletePDF(index)}
@@ -273,12 +248,12 @@ ${generatedText}
           )}
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Analyse IA
           </div>
 
-          <div
+<div
             style={{
               whiteSpace: "pre-line",
               fontSize: "18px",
@@ -290,12 +265,12 @@ ${generatedText}
           </div>
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Exercices générés par IA
           </div>
 
-          {generatedExercises.length === 0 ? (
+{generatedExercises.length === 0 ? (
             <p>Aucun exercice généré.</p>
           ) : (
             generatedExercises.map((exercise, index) => (
@@ -308,7 +283,7 @@ ${generatedText}
                   {exercise.type.toUpperCase()}
                 </div>
 
-                <div className="analysis-value">
+<div className="analysis-value">
                   {exercise.question}
                 </div>
               </div>
@@ -316,12 +291,12 @@ ${generatedText}
           )}
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Connaissances IA Actives
           </div>
 
-          {iaKnowledge.length === 0 ? (
+{iaKnowledge.length === 0 ? (
             <p>Aucune connaissance IA chargée.</p>
           ) : (
             iaKnowledge.map((item, index) => (
@@ -334,11 +309,11 @@ ${generatedText}
                   Source utilisée
                 </div>
 
-                <div className="analysis-value">
+<div className="analysis-value">
                   {item.source}
                 </div>
 
-                <div style={{ marginTop: "8px" }}>
+<div style={{ marginTop: "8px" }}>
                   Domaine : {item.speciality}
                 </div>
               </div>
@@ -346,7 +321,7 @@ ${generatedText}
           )}
         </div>
 
-        <div
+<div
           className="button-row"
           style={{ justifyContent: "center" }}
         >
@@ -356,14 +331,15 @@ ${generatedText}
             </button>
           </Link>
 
-          <Link href="/">
+<Link href="/">
             <button className="primary-button">
               Accueil
             </button>
           </Link>
         </div>
 
-      </div>
+</div>
     </div>
   );
 }
+
