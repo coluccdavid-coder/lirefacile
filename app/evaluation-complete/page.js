@@ -30,11 +30,12 @@ const tests = [
       memory: true,
     },
     {
-      type: "lecture",
-      question: "Complète : Le chien mange un ____",
-      helper: "Trouve le mot manquant.",
-      answer: "os",
-    },
+      type: "image",
+      image:
+        "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=800",
+      question: "Que tient le chien dans sa bouche ?",
+      helper: "Observe bien l’image.",
+      answer:
     {
       type: "image",
       image:
