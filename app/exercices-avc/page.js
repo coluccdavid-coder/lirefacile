@@ -1,76 +1,136 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ExercicesAVCPage() {
-  const router = useRouter();
+  const [exercises, setExercises] = useState([]);
+  const [step, setStep] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const saved =
+      JSON.parse(
+        localStorage.getItem("aiGeneratedExercises")
+      ) || [];
+
+    setExercises(saved);
+  }, []);
+
+  const current = exercises[step];
+
+  const verifyAnswer = () => {
+    if (!current) return;
+
+    const normalized = answer.toLowerCase().trim();
+    const expected = current.answer
+      .toLowerCase()
+      .trim();
+
+    if (normalized.includes(expected)) {
+      setScore((prev) => prev + 1);
+      setFeedback("✅ Bonne réponse");
+    } else {
+      setFeedback(
+        `❌ Réponse attendue : ${current.answer}`
+      );
+    }
+  };
+
+  const nextExercise = () => {
+    setAnswer("");
+    setFeedback("");
+
+    if (step < exercises.length - 1) {
+      setStep((prev) => prev + 1);
+    }
+  };
+
+  if (exercises.length === 0) {
+    return (
+      <div className="page-container">
+        <div className="main-card">
+          <h1 className="main-title">
+            Exercices AVC
+          </h1>
+
+          <p>
+            Aucun exercice IA généré.
+          </p>
+
+          <p>
+            Ajoute un PDF dans Bibliothèque PDF.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <div className="main-card fade-in">
 
         <h1 className="main-title">
-          Exercices AVC
+          Exercices AVC IA
         </h1>
 
-        <div className="assistant-box">
-          <div className="assistant-avatar">🧠</div>
-
-          <div className="assistant-message">
-            Rééducation langage, mémoire et orthophonie post-AVC.
-          </div>
+        <div className="progress-container">
+          <div
+            className="progress-bar"
+            style={{
+              width: `${
+                ((step + 1) / exercises.length) * 100
+              }%`,
+            }}
+          />
         </div>
 
-        <div className="cards-grid">
+        <div className="exercise-card">
 
-          <div className="feature-card">
-            <h3>Langage</h3>
-            <p>Reconstruction de phrases.</p>
-
-            <button
-              className="primary-button"
-              onClick={() => router.push("/langage-avc")}
-            >
-              Commencer
-            </button>
+          <div className="exercise-title">
+            Exercice {step + 1} / {exercises.length}
           </div>
 
-          <div className="feature-card">
-            <h3>Mémoire</h3>
-            <p>Réactivation cognitive progressive.</p>
+          <div className="exercise-question">
+            {current.question}
+          </div>
+
+          <input
+            className="exercise-input"
+            value={answer}
+            onChange={(e) =>
+              setAnswer(e.target.value)
+            }
+            placeholder="Réponse"
+          />
+
+          <div className="button-row">
+            <button
+              className="primary-button"
+              onClick={verifyAnswer}
+            >
+              Vérifier
+            </button>
 
             <button
               className="primary-button success-button"
-              onClick={() => router.push("/memoire-avc")}
+              onClick={nextExercise}
             >
-              Commencer
+              Suivant
             </button>
           </div>
 
-          <div className="feature-card">
-            <h3>Prononciation</h3>
-            <p>Travail vocal et répétition.</p>
+          {feedback && (
+            <div className="feedback-box">
+              {feedback}
+            </div>
+          )}
 
-            <button
-              className="primary-button warning-button"
-              onClick={() => router.push("/prononciation-avc")}
-            >
-              Commencer
-            </button>
+          <div className="score-box">
+            Score : {score} / {exercises.length}
           </div>
 
-        </div>
-
-        <div
-          className="button-row"
-          style={{ justifyContent: "center", marginTop: "40px" }}
-        >
-          <button
-            className="primary-button"
-            onClick={() => router.push("/")}
-          >
-            Retour Accueil
-          </button>
         </div>
 
       </div>
