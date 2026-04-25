@@ -8,6 +8,7 @@ export default function ExercicesAVCPage() {
   return (
     <div className="page-container">
       <div className="main-card fade-in">
+
         <h1 className="main-title">Exercices AVC</h1>
 
         <div className="assistant-box">
@@ -19,8 +20,9 @@ export default function ExercicesAVCPage() {
         </div>
 
         <div className="cards-grid">
+
           <div
-            className="feature-card"
+            className="feature-card clickable-card"
             onClick={() => router.push("/avc-langage")}
           >
             <h3>Langage</h3>
@@ -28,7 +30,7 @@ export default function ExercicesAVCPage() {
           </div>
 
           <div
-            className="feature-card"
+            className="feature-card clickable-card"
             onClick={() => router.push("/avc-memoire")}
           >
             <h3>Mémoire</h3>
@@ -36,13 +38,24 @@ export default function ExercicesAVCPage() {
           </div>
 
           <div
-            className="feature-card"
+            className="feature-card clickable-card"
             onClick={() => router.push("/avc-prononciation")}
           >
             <h3>Prononciation</h3>
             <p>Travail vocal et répétition.</p>
           </div>
+
         </div>
+
+        <div className="button-row">
+          <button
+            className="primary-button"
+            onClick={() => router.push("/")}
+          >
+            Retour Accueil
+          </button>
+        </div>
+
       </div>
     </div>
   );
