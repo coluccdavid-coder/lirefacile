@@ -1,19 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LangageAVCPage() {
+export default function MemoireAVCPage() {
   const router = useRouter();
 
+  const [showWords, setShowWords] = useState(true);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
 
+  const words = "chat — livre — soleil";
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWords(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const verify = () => {
-    if (answer.toLowerCase().includes("bonjour")) {
-      setFeedback("✅ Bonne réponse");
+    const normalized = answer.toLowerCase();
+
+    if (
+      normalized.includes("chat") &&
+      normalized.includes("livre") &&
+      normalized.includes("soleil")
+    ) {
+      setFeedback("✅ Très bonne mémoire");
     } else {
-      setFeedback("❌ Essaie encore");
+      setFeedback("❌ Réponse attendue : chat livre soleil");
     }
   };
 
@@ -21,22 +38,21 @@ export default function LangageAVCPage() {
     <div className="page-container">
       <div className="main-card">
 
-        <h1 className="main-title">Langage AVC</h1>
+        <h1 className="main-title">Mémoire AVC</h1>
 
         <div className="exercise-card">
-          <div className="exercise-title">
-            Rééducation du langage
-          </div>
 
           <div className="exercise-question">
-            Écris un mot de salutation
+            {showWords
+              ? words
+              : "Quels étaient les mots ?"}
           </div>
 
           <input
             className="exercise-input"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Écris ici"
+            placeholder="Écris les mots"
           />
 
           <div className="button-row">
