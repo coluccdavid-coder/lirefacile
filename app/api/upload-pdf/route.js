@@ -10,7 +10,7 @@ export async function POST(req) {
     if (!file) {
       return NextResponse.json({
         success: false,
-        error: "Aucun PDF",
+        error: "Aucun fichier reçu",
       });
     }
 
@@ -24,6 +24,8 @@ export async function POST(req) {
       text: pdf.text,
     });
   } catch (error) {
+    console.error(error);
+
     return NextResponse.json({
       success: false,
       error: "Erreur lecture PDF",
