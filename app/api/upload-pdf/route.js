@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse/lib/pdf-parse.js";
+import pdfParse from "pdf-parse";
 
 export async function POST(req) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req) {
       text: pdf.text || "",
     });
   } catch (error) {
-    console.error("Erreur PDF:", error);
+    console.error(error);
 
     return NextResponse.json({
       success: false,
