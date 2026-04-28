@@ -4,53 +4,64 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ExercicesAVCPage() {
-  const [pdfs, setPdfs] = useState([]);
+  const [allExercises, setAllExercises] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    const saved =
-      JSON.parse(localStorage.getItem("pdfLibrary")) || [];
+    const storedExercises =
+      JSON.parse(localStorage.getItem("generatedExercises")) || [];
 
-    setPdfs(saved);
+    setAllExercises(storedExercises);
   }, []);
+
+  const startTraining = () => {
+    localStorage.setItem(
+      "currentExercisePack",
+      JSON.stringify(allExercises)
+    );
+
+    router.push("/entrainement-avc");
+  };
 
   return (
     <div className="page-container">
       <div className="main-card">
+
         <h1 className="main-title">Exercices AVC</h1>
 
-        <h2 style={{ marginBottom: "30px" }}>
-          Exercices générés depuis PDF
-        </h2>
+        <div className="assistant-box">
+          <div className="assistant-avatar">🧠</div>
 
-        {pdfs.length === 0 ? (
-          <p>Aucun PDF trouvé.</p>
-        ) : (
-          pdfs.map((pdf, index) => (
-            <div
-              key={index}
-              className="analysis-card"
-              style={{ marginBottom: "30px" }}
-            >
-              <h3>{pdf.name}</h3>
+          <div className="assistant-message">
+            Programme IA construit depuis tous les PDF thérapeutiques.
+          </div>
+        </div>
 
-              <p>Exercice IA basé sur ce document.</p>
+        <div className="analysis-box">
+
+          <div className="analysis-title">
+            Exercices fusionnés
+          </div>
+
+          {allExercises.length === 0 ? (
+            <p>Aucun exercice généré.</p>
+          ) : (
+            <>
+              <p style={{ marginBottom: "25px" }}>
+                {allExercises.length} exercices générés automatiquement.
+              </p>
 
               <button
                 className="primary-button success-button"
-                onClick={() =>
-                  router.push(
-                    `/exercice/${encodeURIComponent(pdf.name)}`
-                  )
-                }
+                onClick={startTraining}
               >
-                Lancer exercice
+                Lancer Programme AVC IA
               </button>
-            </div>
-          ))
-        )}
+            </>
+          )}
+        </div>
 
-        <div style={{ marginTop: "40px" }}>
+        <div className="button-row">
           <button
             className="primary-button blue-button"
             onClick={() => router.push("/")}
