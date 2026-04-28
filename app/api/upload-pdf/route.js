@@ -1,80 +1,68 @@
 import { NextResponse } from "next/server";
 import pdfParse from "pdf-parse";
-import Tesseract from "tesseract.js";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(req) {
   try {
-    console.log("=== START PDF UPLOAD ===");
+    console.log("START upload pdf");
 
     const formData = await req.formData();
     const file = formData.get("file");
 
     if (!file) {
-      console.log("ERREUR : aucun fichier");
       return NextResponse.json({
         success: false,
         error: "Aucun fichier",
       });
     }
 
-    console.log("Nom fichier :", file.name);
+    console.log("Nom :", file.name);
     console.log("Taille :", file.size);
+
+    // sécurité taille
+    if (file.size > 4000000) {
+      return NextResponse.json({
+        success: false,
+        error: "PDF trop lourd (max 4MB)",
+      });
+    }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    console.log("Buffer créé");
-
-    let extractedText = "";
+    let text = "";
 
     try {
-      console.log("Tentative pdf-parse");
+      const data = await pdfParse(buffer, {
+        pagerender: async (pageData) => {
+          const textContent = await pageData.getTextContent();
 
-      const pdfData = await pdfParse(buffer);
+          return textContent.items
+            .map((item) => item.str)
+            .join(" ");
+        },
+      });
 
-      extractedText = pdfData.text;
-
-      console.log(
-        "Texte extrait longueur :",
-        extractedText.length
-      );
+      text = data.text || "";
     } catch (err) {
-      console.log("Erreur pdf-parse :", err);
+      console.error("PDF parse erreur:", err);
+
+      return NextResponse.json({
+        success: false,
+        error: "Lecture PDF impossible",
+      });
     }
 
-    if (!extractedText || extractedText.length < 50) {
-      console.log("OCR lancé");
-
-      try {
-        const result = await Tesseract.recognize(
-          buffer,
-          "fra"
-        );
-
-        extractedText = result.data.text;
-
-        console.log(
-          "OCR terminé longueur :",
-          extractedText.length
-        );
-      } catch (ocrError) {
-        console.log("Erreur OCR :", ocrError);
-
-        return NextResponse.json({
-          success: false,
-          error: "Erreur OCR",
-        });
-      }
-    }
-
-    console.log("=== SUCCESS ===");
+    console.log("Texte extrait :", text.length);
 
     return NextResponse.json({
       success: true,
-      text: extractedText,
+      text,
     });
   } catch (error) {
-    console.log("ERREUR GLOBALE :", error);
+    console.error("Erreur globale :", error);
 
     return NextResponse.json({
       success: false,
