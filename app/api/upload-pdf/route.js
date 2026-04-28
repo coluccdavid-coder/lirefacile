@@ -20,8 +20,8 @@ export async function POST(req) {
     console.log("Nom:", file.name);
     console.log("Taille:", file.size);
 
-    // limite sécurité
-    if (file.size > 4000000) {
+    // sécurité taille
+    if (file.size > 4 * 1024 * 1024) {
       return NextResponse.json({
         success: false,
         error: "PDF trop lourd (max 4MB)",
@@ -31,26 +31,34 @@ export async function POST(req) {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    // import dynamique
+    // IMPORTANT → version Node safe
     const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-    const pdf = await pdfjsLib.getDocument({
+    // désactive worker (important Vercel)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = undefined;
+
+    const loadingTask = pdfjsLib.getDocument({
       data: uint8Array,
-      useWorkerFetch: false,
+      disableFontFace: true,
+      useSystemFonts: false,
       isEvalSupported: false,
-      useSystemFonts: true,
-    }).promise;
+      useWorkerFetch: false,
+    });
+
+    const pdf = await loadingTask.promise;
 
     let fullText = "";
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
 
-      const content = await page.getTextContent();
+      const textContent = await page.getTextContent();
 
-      const strings = content.items.map((item) => item.str);
+      const pageText = textContent.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .join(" ");
 
-      fullText += strings.join(" ") + "\n";
+      fullText += pageText + "\n";
     }
 
     console.log("Texte extrait:", fullText.length);
@@ -64,7 +72,7 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: error.message || "Erreur lecture PDF",
     });
   }
 }
