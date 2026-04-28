@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req) {
   try {
-    console.log("START upload pdf");
+    console.log("UPLOAD START");
 
     const formData = await req.formData();
     const file = formData.get("file");
@@ -18,10 +17,10 @@ export async function POST(req) {
       });
     }
 
-    console.log("Nom :", file.name);
-    console.log("Taille :", file.size);
+    console.log("Nom:", file.name);
+    console.log("Taille:", file.size);
 
-    // sécurité taille
+    // limite sécurité
     if (file.size > 4000000) {
       return NextResponse.json({
         success: false,
@@ -29,44 +28,43 @@ export async function POST(req) {
       });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
 
-    let text = "";
+    // import dynamique
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-    try {
-      const data = await pdfParse(buffer, {
-        pagerender: async (pageData) => {
-          const textContent = await pageData.getTextContent();
+    const pdf = await pdfjsLib.getDocument({
+      data: uint8Array,
+      useWorkerFetch: false,
+      isEvalSupported: false,
+      useSystemFonts: true,
+    }).promise;
 
-          return textContent.items
-            .map((item) => item.str)
-            .join(" ");
-        },
-      });
+    let fullText = "";
 
-      text = data.text || "";
-    } catch (err) {
-      console.error("PDF parse erreur:", err);
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
 
-      return NextResponse.json({
-        success: false,
-        error: "Lecture PDF impossible",
-      });
+      const content = await page.getTextContent();
+
+      const strings = content.items.map((item) => item.str);
+
+      fullText += strings.join(" ") + "\n";
     }
 
-    console.log("Texte extrait :", text.length);
+    console.log("Texte extrait:", fullText.length);
 
     return NextResponse.json({
       success: true,
-      text,
+      text: fullText,
     });
   } catch (error) {
-    console.error("Erreur globale :", error);
+    console.error("ERREUR PDF:", error);
 
     return NextResponse.json({
       success: false,
-      error: "Erreur upload PDF",
+      error: error.message,
     });
   }
 }
