@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateExercises } from "@/lib/ai-engine";
+import { generateExercises } from "../../../lib/ai-engine";
 
 export async function POST(req) {
   try {
