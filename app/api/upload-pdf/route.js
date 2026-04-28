@@ -1,39 +1,52 @@
 import { NextResponse } from "next/server";
 import pdfParse from "pdf-parse";
+import Tesseract from "tesseract.js";
 
 export async function POST(req) {
   try {
     const formData = await req.formData();
-
     const file = formData.get("file");
 
     if (!file) {
       return NextResponse.json({
         success: false,
-        error: "Aucun fichier reçu",
+        error: "Aucun fichier",
       });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    console.log("PDF reçu :", file.name);
-    console.log("Taille :", file.size);
+    let extractedText = "";
 
-    const pdf = await pdfParse(buffer);
+    try {
+      const pdfData = await pdfParse(buffer);
 
-    console.log("Texte extrait OK");
+      extractedText = pdfData.text;
+    } catch (e) {
+      console.log("pdf-parse erreur");
+    }
+
+    // OCR si texte vide
+    if (!extractedText || extractedText.length < 50) {
+      const result = await Tesseract.recognize(
+        buffer,
+        "fra"
+      );
+
+      extractedText = result.data.text;
+    }
 
     return NextResponse.json({
       success: true,
-      text: pdf.text || "",
+      text: extractedText,
     });
   } catch (error) {
-    console.error("ERREUR PDF :", error);
+    console.error(error);
 
     return NextResponse.json({
       success: false,
-      error: error.message || "Erreur lecture PDF",
+      error: "Erreur upload PDF",
     });
   }
 }
