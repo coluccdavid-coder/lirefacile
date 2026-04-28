@@ -349,3 +349,66 @@ body {
   background: linear-gradient(135deg, #eef4ff, #ffffff);
   border: 2px solid #dbeafe;
 }
+/* ========================= */
+/* CARDS MODERNES ACCUEIL */
+/* ========================= */
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  margin-top: 45px;
+}
+
+.feature-card {
+  background: linear-gradient(145deg, #ffffff, #f8fbff);
+  border-radius: 28px;
+  padding: 32px;
+  cursor: pointer;
+  border: 2px solid #edf2ff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  transition: all 0.25s ease;
+  min-height: 220px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  border-color: #3b82f6;
+}
+
+.card-icon {
+  font-size: 42px;
+  margin-bottom: 16px;
+}
+
+.feature-card h3 {
+  font-size: 34px;
+  font-weight: 800;
+  color: #163b8c;
+  margin-bottom: 14px;
+}
+
+.feature-card p {
+  font-size: 22px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+/* ========================= */
+/* BOUTONS PRINCIPAUX */
+/* ========================= */
+
+.primary-button {
+  border: none;
+  border-radius: 20px;
+  padding: 18px 34px;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+}
