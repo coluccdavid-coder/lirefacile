@@ -6,43 +6,63 @@ export async function POST(req) {
   try {
     const formData = await req.formData();
 
-    const file = formData.get("file");
+const file = formData.get("file");
 
-    if (!file) {
+if (!file) {
       return NextResponse.json({
         success: false,
-        error: "Aucun fichier",
+        error: "Aucun fichier reçu",
       });
     }
 
-    const bytes = await file.arrayBuffer();
+const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    let extractedText = "";
+let extractedText = "";
 
+// ---------- Lecture PDF texte ----------
     try {
       const pdf = await pdfParse(buffer);
-
       extractedText = pdf.text;
-    } catch (err) {
-      console.log("PDF parse failed");
+    } catch (pdfError) {
+      console.error("Erreur pdf-parse:", pdfError);
     }
 
-    if (!extractedText || extractedText.length < 50) {
+// ---------- Fallback OCR ----------
+    if (!extractedText || extractedText.trim().length < 50) {
+      try {
+        console.log("Activation OCR Tesseract...");
+
+const ocrResult = await Tesseract.recognize(
+          buffer,
+          "fra",
+          {
+            logger: (m) => console.log(m),
+          }
+        );
+
+extractedText = ocrResult.data.text;
+      } catch (ocrError) {
+        console.error("Erreur OCR:", ocrError);
+      }
+    }
+
+// ---------- Texte minimal si vide ----------
+    if (!extractedText || extractedText.trim().length < 10) {
       extractedText =
-        "AVC rééducation motricité équilibre mémoire langage orthophonie mobilité récupération patient kinésithérapie";
+        "AVC rééducation mémoire orthophonie langage cognition lecture dyslexie stimulation cognitive";
     }
 
-    return NextResponse.json({
+return NextResponse.json({
       success: true,
       text: extractedText,
     });
   } catch (error) {
-    console.error(error);
+    console.error("UPLOAD PDF ERROR:", error);
 
-    return NextResponse.json({
+return NextResponse.json({
       success: false,
-      error: "Erreur lecture PDF",
+      error: error.message || "Erreur upload PDF",
     });
   }
 }
