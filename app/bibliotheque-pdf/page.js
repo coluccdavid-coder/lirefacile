@@ -1,91 +1,81 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
 export default function BibliothequePDFPage() {
   const [files, setFiles] = useState([]);
   const [summary, setSummary] = useState("");
   const [iaKnowledge, setIaKnowledge] = useState([]);
   const [generatedExercises, setGeneratedExercises] = useState([]);
-
+// ==========================
+  // LOAD LOCAL STORAGE
+  // ==========================
 useEffect(() => {
     const saved =
       JSON.parse(localStorage.getItem("pdfLibrary")) || [];
-
 const memory =
       JSON.parse(localStorage.getItem("iaMemory")) || [];
-
 const exercises =
       JSON.parse(localStorage.getItem("generatedExercises")) || [];
-
 setFiles(saved);
     setIaKnowledge(memory);
     setGeneratedExercises(exercises);
   }, []);
-
+// ==========================
+  // DETECT SPECIALITY
+  // ==========================
 const detectSpeciality = (name) => {
     const lower = name.toLowerCase();
-
 if (
       lower.includes("avc") ||
       lower.includes("aphasie")
     ) {
       return "Rééducation AVC";
     }
-
 if (
       lower.includes("dys") ||
       lower.includes("lecture")
     ) {
       return "Dyslexie";
     }
-
 if (
       lower.includes("memoire") ||
       lower.includes("mémoire")
     ) {
       return "Mémoire Cognitive";
     }
-
 return "Orthophonie Générale";
   };
-
+// ==========================
+  // CREATE EXERCISES FROM TEXT
+  // ==========================
 const buildExercisesFromText = (text, speciality) => {
     const exercises = [];
-
 const sentences = text
       .replace(/\n/g, " ")
       .split(".")
       .filter((line) => line.trim().length > 25)
       .slice(0, 25);
-
 sentences.forEach((sentence) => {
       const cleanSentence = sentence.trim();
-
 if (speciality.includes("AVC")) {
         exercises.push({
           type: "langage",
           question: `Répète : ${cleanSentence.substring(0, 90)}`,
         });
-
 exercises.push({
           type: "mémoire",
           question: `Retiens cette phrase : ${cleanSentence.substring(0, 70)}`,
         });
-
 exercises.push({
           type: "compréhension",
           question: `Explique cette phrase : ${cleanSentence.substring(0, 80)}`,
         });
       }
-
 if (speciality.includes("Dys")) {
         exercises.push({
           type: "lecture",
           question: `Lis : ${cleanSentence.substring(0, 80)}`,
         });
-
 exercises.push({
           type: "orthographe",
           question: `Recopie : ${cleanSentence
@@ -93,13 +83,11 @@ exercises.push({
             .slice(0, 6)
             .join(" ")}`,
         });
-
 exercises.push({
           type: "compréhension",
           question: `Que comprends-tu de : ${cleanSentence.substring(0, 60)} ?`,
         });
       }
-
 if (speciality.includes("Mémoire")) {
         exercises.push({
           type: "mémoire",
@@ -107,10 +95,11 @@ if (speciality.includes("Mémoire")) {
         });
       }
     });
-
 return exercises;
   };
-
+// ==========================
+  // FETCH INTERNET KNOWLEDGE
+  // ==========================
 const fetchInternetKnowledge = async (speciality) => {
     try {
       const response = await fetch("/api/web-knowledge", {
@@ -120,66 +109,75 @@ const fetchInternetKnowledge = async (speciality) => {
         },
         body: JSON.stringify({ speciality }),
       });
-
 const data = await response.json();
-
 if (data.success) {
         return data.exercises.map((item) => ({
           type: "internet",
           question: item,
         }));
       }
-
 return [];
     } catch (error) {
       console.error(error);
       return [];
     }
   };
-
+// ==========================
+  // SAVE PDF
+  // ==========================
 const savePDF = async (event) => {
     const file = event.target.files?.[0];
-
 if (!file) return;
-
 const maxSize = 4 * 1024 * 1024;
-
 if (file.size > maxSize) {
       alert("PDF trop volumineux (max 4 MB)");
       return;
     }
-
 try {
       setSummary("Analyse IA en cours...");
-
 const formData = new FormData();
       formData.append("file", file);
-
 const response = await fetch("/api/upload-pdf", {
         method: "POST",
         body: formData,
       });
-
-const data = await response.json();
-
+// ==========================
+      // SAFE RESPONSE
+      // ==========================
+const rawText = await response.text();
+console.log("RAW API RESPONSE:", rawText);
+let data;
+try {
+        data = JSON.parse(rawText);
+      } catch (parseError) {
+        setSummary(`
+Erreur IA.
+Réponse serveur invalide.
+Nom du PDF : ${file.name}
+Taille : ${Math.round(file.size / 1024)} KB
+Réponse brute :
+${rawText}
+        `);
+return;
+      }
+// ==========================
+      // API ERROR
+      // ==========================
 if (!data.success) {
         console.log("ERREUR PDF:", data);
-
 setSummary(`
 Erreur lecture PDF
-
 Message :
 ${data.error || "Erreur inconnue"}
-
 Nom du PDF : ${file.name}
 Taille : ${Math.round(file.size / 1024)} KB
         `);
-
 return;
       }
-
+// ==========================
+      // SPECIALITY
+      // ==========================
 const speciality = detectSpeciality(file.name);
-
 const newPDF = {
         id: Date.now(),
         name: file.name,
@@ -187,19 +185,17 @@ const newPDF = {
         date: new Date().toLocaleDateString(),
         speciality,
       };
-
 const updatedFiles = [...files, newPDF];
-
 setFiles(updatedFiles);
-
 localStorage.setItem(
         "pdfLibrary",
         JSON.stringify(updatedFiles)
       );
-
+// ==========================
+      // MEMORY IA
+      // ==========================
 const existingMemory =
         JSON.parse(localStorage.getItem("iaMemory")) || [];
-
 const memoryEntry = {
         id: Date.now(),
         name: file.name,
@@ -207,38 +203,33 @@ const memoryEntry = {
         extractedText: data.text,
         addedAt: new Date().toISOString(),
       };
-
 const updatedMemory = [
         ...existingMemory,
         memoryEntry,
       ];
-
 localStorage.setItem(
         "iaMemory",
         JSON.stringify(updatedMemory)
       );
-
 setIaKnowledge(updatedMemory);
-
+// ==========================
+      // EXERCISES
+      // ==========================
 const aiExercises = buildExercisesFromText(
         data.text,
         speciality
       );
-
 const internetExercises =
         await fetchInternetKnowledge(speciality);
-
 const existingExercises =
         JSON.parse(
           localStorage.getItem("generatedExercises")
         ) || [];
-
 const mergedExercises = [
         ...existingExercises,
         ...aiExercises,
         ...internetExercises,
       ];
-
 const uniqueExercises = mergedExercises.filter(
         (exercise, index, self) =>
           index ===
@@ -246,82 +237,71 @@ const uniqueExercises = mergedExercises.filter(
             (e) => e.question === exercise.question
           )
       );
-
 setGeneratedExercises(uniqueExercises);
-
 localStorage.setItem(
         "generatedExercises",
         JSON.stringify(uniqueExercises)
       );
-
 localStorage.setItem(
         "currentExercisePack",
         JSON.stringify(uniqueExercises)
       );
-
+// ==========================
+      // SUCCESS
+      // ==========================
 setSummary(`
 PDF analysé avec succès.
-
 Nom : ${file.name}
-
 Spécialité : ${speciality}
-
+Pages : ${data.pages || "?"}
 Mémoire IA enrichie.
-
 ${aiExercises.length} exercices PDF créés.
-
 ${internetExercises.length} exercices Internet ajoutés.
-
 Total mémoire IA :
 ${updatedMemory.length} connaissances.
-
 Total exercices :
 ${uniqueExercises.length}
       `);
     } catch (error) {
       console.error(error);
-
 setSummary(`
 Erreur IA.
-
 ${error?.message || "Erreur inconnue"}
       `);
     }
   };
-
+// ==========================
+  // DELETE PDF
+  // ==========================
 const deletePDF = (index) => {
     const updatedFiles = files.filter(
       (_, i) => i !== index
     );
-
 setFiles(updatedFiles);
-
 localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updatedFiles)
     );
   };
-
+// ==========================
+  // UI
+  // ==========================
 return (
     <div className="page-container">
       <div className="main-card">
         <h1 className="main-title">
           Bibliothèque PDF IA
         </h1>
-
 <div className="assistant-box">
           <div className="assistant-avatar">📚</div>
-
 <div className="assistant-message">
             Ajoute des PDF pour enrichir la mémoire thérapeutique.
           </div>
         </div>
-
 <div className="analysis-box">
           <div className="analysis-title">
             Ajouter un PDF
           </div>
-
 <input
             type="file"
             accept="application/pdf"
@@ -329,12 +309,10 @@ return (
             className="exercise-input"
           />
         </div>
-
 <div className="analysis-box">
           <div className="analysis-title">
             Documents enregistrés
           </div>
-
 {files.length === 0 ? (
             <p>Aucun PDF enregistré.</p>
           ) : (
@@ -348,7 +326,6 @@ return (
                 <div>{file.speciality}</div>
                 <div>{file.size} KB</div>
                 <div>{file.date}</div>
-
 <button
                   className="primary-button warning-button"
                   onClick={() => deletePDF(index)}
@@ -360,12 +337,10 @@ return (
             ))
           )}
         </div>
-
 <div className="analysis-box">
           <div className="analysis-title">
             Mémoire IA
           </div>
-
 {iaKnowledge.length === 0 ? (
             <p>Aucune mémoire IA.</p>
           ) : (
@@ -381,12 +356,10 @@ return (
             ))
           )}
         </div>
-
 <div className="analysis-box">
           <div className="analysis-title">
             Exercices générés
           </div>
-
 {generatedExercises.length === 0 ? (
             <p>Aucun exercice généré.</p>
           ) : (
@@ -404,17 +377,14 @@ return (
               ))
           )}
         </div>
-
 <div className="analysis-box">
           <div className="analysis-title">
             Résumé IA
           </div>
-
 <div style={{ whiteSpace: "pre-line" }}>
             {summary}
           </div>
         </div>
-
 <div className="button-row">
           <Link href="/nouveau-patient">
             <button className="primary-button success-button">
@@ -438,4 +408,3 @@ return (
     </div>
   );
 }
-
