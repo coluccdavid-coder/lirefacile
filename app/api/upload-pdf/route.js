@@ -43,7 +43,6 @@ export async function POST(req) {
     // ==========================
 
     const arrayBuffer = await file.arrayBuffer();
-
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // ==========================
@@ -54,18 +53,15 @@ export async function POST(req) {
       "pdfjs-dist/legacy/build/pdf.mjs"
     );
 
-    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    
-     // ==========================
+    // ==========================
     // LECTURE PDF
     // ==========================
 
     const loadingTask = pdfjsLib.getDocument({
       data: uint8Array,
-      disableFontFace: true,
-      useWorkerFetch: false,
-      isEvalSupported: false,
+      disableWorker: true,
       useSystemFonts: true,
+      isEvalSupported: false,
     });
 
     const pdf = await loadingTask.promise;
@@ -102,10 +98,7 @@ export async function POST(req) {
       .replace(/\n+/g, "\n")
       .trim();
 
-    console.log(
-      "Texte extrait:",
-      fullText.length
-    );
+    console.log("Texte extrait:", fullText.length);
 
     // ==========================
     // PDF VIDE
@@ -114,8 +107,7 @@ export async function POST(req) {
     if (!fullText || fullText.length < 30) {
       return NextResponse.json({
         success: false,
-        error:
-          "PDF vide ou texte non détecté",
+        error: "PDF vide ou texte non détecté",
       });
     }
 
@@ -134,9 +126,7 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: false,
-      error:
-        error?.message ||
-        "Erreur extraction PDF",
+      error: error?.message || "Erreur extraction PDF",
     });
   }
 }
