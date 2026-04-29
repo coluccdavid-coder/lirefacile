@@ -1,61 +1,142 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-function ProgrammeContent() {
+export default function ProgrammeDys() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const [current, setCurrent] = useState(null);
+const [exercises, setExercises] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const type = searchParams.get("type");
+useEffect(() => {
+    const savedExercises =
+      JSON.parse(localStorage.getItem("currentExercisePack")) || [];
 
-    const data = {
-      lecture: {
-        title: "Lecture",
-        question: "Lis ce mot : MAISON",
-      },
-      orthographe: {
-        title: "Orthographe",
-        question: "Écris correctement : éléphant",
-      },
-      comprehension: {
-        title: "Compréhension",
-        question: "Que fait un chien ?",
-      },
-    };
+// garde seulement les exercices DYS
+    const dysExercises = savedExercises.filter((ex) => {
+      const type = (ex.type || "").toLowerCase();
 
-    setCurrent(data[type] || data.lecture);
-  }, [searchParams]);
+return (
+        type.includes("lecture") ||
+        type.includes("orthographe") ||
+        type.includes("compréhension") ||
+        type.includes("comprehension") ||
+        type.includes("syllabe") ||
+        type.includes("dys")
+      );
+    });
 
-  if (!current) {
-    return <div>Chargement...</div>;
+if (dysExercises.length > 0) {
+      setExercises(dysExercises);
+    }
+
+setLoading(false);
+  }, []);
+
+const nextExercise = () => {
+    if (currentIndex < exercises.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      alert("Programme Dys terminé ✅");
+      router.push("/exercices-dys");
+    }
+  };
+
+if (loading) {
+    return (
+      <div className="page-container">
+        <div className="main-card">
+          <h1 className="main-title">Chargement...</h1>
+        </div>
+      </div>
+    );
   }
 
-  return (
+if (exercises.length === 0) {
+    return (
+      <div className="page-container">
+        <div className="main-card">
+          <h1 className="main-title">Programme Dys</h1>
+
+<div className="analysis-card">
+            Aucun exercice généré.
+
+<div className="button-row" style={{ marginTop: "30px" }}>
+              <button
+                className="primary-button blue-button"
+                onClick={() => router.push("/nouveau-patient")}
+              >
+                Générer un programme
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+const currentExercise = exercises[currentIndex];
+
+return (
     <div className="page-container">
       <div className="main-card">
         <h1 className="main-title">Programme Dys</h1>
 
-        <div className="analysis-card">
+<div className="assistant-box">
+          <div className="assistant-avatar">📖</div>
+
+<div className="assistant-message">
+            Programme IA personnalisé basé sur symptômes + mémoire PDF.
+          </div>
+        </div>
+
+<div className="progress-container">
+          <div
+            className="progress-bar"
+            style={{
+              width: `${
+                ((currentIndex + 1) / exercises.length) * 100
+              }%`,
+            }}
+          />
+        </div>
+
+<div className="analysis-card">
           <div className="analysis-label">
-            {current.title}
+            {currentExercise.type}
           </div>
 
-          <div
+<div
             style={{
               marginTop: "20px",
               fontSize: "34px",
-              lineHeight: "1.6",
+              lineHeight: "1.7",
             }}
           >
-            {current.question}
+            {currentExercise.question}
           </div>
 
-          <div className="button-row">
+<div
+            style={{
+              marginTop: "20px",
+              fontSize: "18px",
+              color: "#64748b",
+            }}
+          >
+            Exercice {currentIndex + 1} / {exercises.length}
+          </div>
+
+<div className="button-row">
             <button
+              className="primary-button success-button"
+              onClick={nextExercise}
+            >
+              Exercice suivant
+            </button>
+
+<button
               className="primary-button blue-button"
               onClick={() => router.push("/exercices-dys")}
             >
@@ -65,13 +146,5 @@ function ProgrammeContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ProgrammeDys() {
-  return (
-    <Suspense fallback={<div>Chargement programme...</div>}>
-      <ProgrammeContent />
-    </Suspense>
   );
 }
