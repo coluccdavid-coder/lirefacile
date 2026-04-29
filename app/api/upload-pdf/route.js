@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { NextResponse } from "next/server";
+
+// FIX PDFJS DOMMatrix
+global.DOMMatrix = class DOMMatrix {
+  constructor() {}
+};
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
