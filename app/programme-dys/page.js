@@ -1,18 +1,15 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export default function ProgrammeDys() {
+function ProgrammeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [mounted, setMounted] = useState(false);
   const [current, setCurrent] = useState(null);
 
   useEffect(() => {
-    setMounted(true);
-
     const type = searchParams.get("type");
 
     const data = {
@@ -33,8 +30,8 @@ export default function ProgrammeDys() {
     setCurrent(data[type] || data.lecture);
   }, [searchParams]);
 
-  if (!mounted || !current) {
-    return null;
+  if (!current) {
+    return <div>Chargement...</div>;
   }
 
   return (
@@ -68,5 +65,13 @@ export default function ProgrammeDys() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProgrammeDys() {
+  return (
+    <Suspense fallback={<div>Chargement programme...</div>}>
+      <ProgrammeContent />
+    </Suspense>
   );
 }
