@@ -1,36 +1,44 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-export default function NouveauPatientPage() {
+export default function NouveauPatient() {
   const [symptoms, setSymptoms] = useState("");
   const router = useRouter();
-const generateProgram = () => {
-    const iaMemory = JSON.parse(localStorage.getItem("iaMemory")) || [];
-const symptomList = symptoms
-      .toLowerCase()
+const createProgram = async () => {
+    const symptomList = symptoms
       .split(",")
-      .map((s) => s.trim());
-const matchedPDFs = iaMemory.filter((pdf) => {
-      return symptomList.some(
-        (symptom) =>
-          pdf.extractedText?.toLowerCase().includes(symptom) ||
-          pdf.speciality?.toLowerCase().includes(symptom)
-      );
-    });
-const exercises = [];
-matchedPDFs.forEach((pdf) => {
-      exercises.push({
-        type: "mémoire",
-        question: `Travail de mémoire basé sur ${pdf.name}`,
-      });
-exercises.push({
-        type: "langage",
-        question: `Exercice langage inspiré de ${pdf.name}`,
+      .map((s) => s.trim().toLowerCase());
+const memory = JSON.parse(localStorage.getItem("iaMemory")) || [];
+const localExercises = [];
+memory.forEach((pdf) => {
+      symptomList.forEach((symptom) => {
+        if (
+          pdf.extractedText?.toLowerCase().includes(symptom)
+        ) {
+          localExercises.push({
+            type: "pdf",
+            question: `Exercice issu de ${pdf.name}`,
+          });
+        }
       });
     });
+const response = await fetch("/api/search-therapy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        symptoms: symptomList,
+      }),
+    });
+const data = await response.json();
+const merged = [
+      ...localExercises,
+      ...(data.exercises || []),
+    ];
 localStorage.setItem(
       "currentExercisePack",
-      JSON.stringify(exercises)
+      JSON.stringify(merged)
     );
 router.push("/entrainement-avc");
   };
@@ -38,23 +46,17 @@ return (
     <div className="page-container">
       <div className="main-card">
         <h1 className="main-title">Nouveau Patient</h1>
-<div className="assistant-box">
-          <div className="assistant-avatar">🧠</div>
-<div className="assistant-message">
-            Décris les symptômes séparés par virgule.
-          </div>
-        </div>
 <textarea
           className="exercise-input"
           rows={6}
-          placeholder="Exemple : aphasie, mémoire, lecture lente, AVC gauche"
+          placeholder="aphasie, mémoire, lecture"
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
         />
 <div className="button-row">
           <button
             className="primary-button success-button"
-            onClick={generateProgram}
+            onClick={createProgram}
           >
             Créer Programme IA
           </button>
