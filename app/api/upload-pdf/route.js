@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
+// ==========================
 // FIX PDFJS DOMMatrix
+// ==========================
+
 global.DOMMatrix = class DOMMatrix {
   constructor() {}
 };
@@ -11,6 +14,10 @@ export const maxDuration = 60;
 export async function POST(req) {
   try {
     console.log("UPLOAD PDF START");
+
+    // ==========================
+    // RÉCUPÉRATION FORM DATA
+    // ==========================
 
     const formData = await req.formData();
     const file = formData.get("file");
@@ -54,14 +61,25 @@ export async function POST(req) {
     );
 
     // ==========================
+    // FIX WORKER VERCEL
+    // ==========================
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+
+    // ==========================
     // LECTURE PDF
     // ==========================
 
     const loadingTask = pdfjsLib.getDocument({
       data: uint8Array,
-      disableWorker: true,
-      useSystemFonts: true,
+
+      useWorkerFetch: false,
+      disableFontFace: true,
       isEvalSupported: false,
+
+      standardFontDataUrl: null,
+      cMapUrl: null,
+      cMapPacked: false,
     });
 
     const pdf = await loadingTask.promise;
@@ -112,7 +130,7 @@ export async function POST(req) {
     }
 
     // ==========================
-    // REPONSE IA
+    // SUCCÈS
     // ==========================
 
     return NextResponse.json({
