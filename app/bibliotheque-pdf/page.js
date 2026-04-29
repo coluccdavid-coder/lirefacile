@@ -5,18 +5,11 @@ export default function BibliothequePDFPage() {
   const [files, setFiles] = useState([]);
   const [summary, setSummary] = useState("");
   const [iaKnowledge, setIaKnowledge] = useState([]);
-  const [generatedExercises, setGeneratedExercises] = useState([]);
 useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("pdfLibrary")) || [];
     setFiles(saved);
-const knowledge = saved.map((pdf) => ({
-      source: pdf.name,
-      speciality: detectSpeciality(pdf.name),
-    }));
-setIaKnowledge(knowledge);
-const storedExercises =
-      JSON.parse(localStorage.getItem("aiGeneratedExercises")) || [];
-setGeneratedExercises(storedExercises);
+const memory = JSON.parse(localStorage.getItem("iaMemory")) || [];
+    setIaKnowledge(memory);
   }, []);
 const detectSpeciality = (name) => {
     const lower = name.toLowerCase();
@@ -31,123 +24,54 @@ if (lower.includes("memoire") || lower.includes("mémoire")) {
     }
 return "Orthophonie Générale";
   };
-const generateAdaptiveExercises = (speciality, patientProfile) => {
-    const exercises = [];
-if (speciality.includes("AVC")) {
-      if (patientProfile.trouble === "aphasie") {
-        exercises.push({
-          type: "langage",
-          question: "Répète : Bonjour, je vais bien.",
-        });
-exercises.push({
-          type: "phrases",
-          question: "Complète : Je bois un ___",
-        });
-      }
-if (patientProfile.trouble === "memoire") {
-        exercises.push({
-          type: "memoire",
-          question: "Mémorise : pomme, voiture, soleil",
-        });
-      }
-if (patientProfile.trouble === "deglutition") {
-        exercises.push({
-          type: "respiration",
-          question: "Inspire 3 secondes puis souffle lentement",
-        });
-      }
-    }
-return exercises;
-  };
 const savePDF = async (event) => {
     const file = event.target.files?.[0];
 if (!file) return;
 const maxSize = 4 * 1024 * 1024;
 if (file.size > maxSize) {
-      alert("PDF trop volumineux. Maximum 4 MB.");
+      alert("PDF trop volumineux (max 4 MB)");
       return;
     }
-const newPDF = {
-      name: file.name,
-      size: Math.round(file.size / 1024),
-      date: new Date().toLocaleDateString(),
-      type: "PDF thérapeutique",
-      speciality: detectSpeciality(file.name),
-    };
-const updated = [...files, newPDF];
-setFiles(updated);
-localStorage.setItem("pdfLibrary", JSON.stringify(updated));
-    localStorage.setItem("pdf-library", JSON.stringify(updated));
-const knowledge = updated.map((pdf) => ({
-      source: pdf.name,
-      speciality: detectSpeciality(pdf.name),
-    }));
-setIaKnowledge(knowledge);
-await generateSummary(file);
-  };
-const generateSummary = async (file) => {
-    try {
-      setSummary("Analyse IA en cours...");
 const formData = new FormData();
-      formData.append("file", file);
-const pdfResponse = await fetch("/api/upload-pdf", {
+    formData.append("file", file);
+try {
+      setSummary("Analyse IA en cours...");
+const response = await fetch("/api/upload-pdf", {
         method: "POST",
         body: formData,
       });
-const pdfData = await pdfResponse.json();
-if (!pdfData.success) {
+const data = await response.json();
+if (!data.success) {
         setSummary("Erreur lecture PDF");
         return;
       }
-const response = await fetch("/api/analyse-pdf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: pdfData.text,
-        }),
-      });
-const data = await response.json();
-if (data.success) {
-        const patientProfile =
-          JSON.parse(localStorage.getItem("patientProfile")) || {
-            trouble: "aphasie",
-            niveau: "modéré",
-          };
 const speciality = detectSpeciality(file.name);
-let adaptiveExercises = generateAdaptiveExercises(
-          speciality,
-          patientProfile
-        );
-if (data.exercises && data.exercises.length > 0) {
-          adaptiveExercises = [...adaptiveExercises, ...data.exercises];
-        }
-setGeneratedExercises(adaptiveExercises);
-localStorage.setItem(
-          "aiGeneratedExercises",
-          JSON.stringify(adaptiveExercises)
-        );
-localStorage.setItem(
-          "generatedExercises",
-          JSON.stringify(adaptiveExercises)
-        );
-const generatedText = adaptiveExercises
-          .map(
-            (ex) => `• ${ex.type.toUpperCase()} → ${ex.question}`
-          )
-          .join("\n");
-
+const newPDF = {
+        name: file.name,
+        size: Math.round(file.size / 1024),
+        date: new Date().toLocaleDateString(),
+        speciality,
+      };
+const updatedFiles = [...files, newPDF];
+setFiles(updatedFiles);
+      localStorage.setItem("pdfLibrary", JSON.stringify(updatedFiles));
+const existingMemory =
+        JSON.parse(localStorage.getItem("iaMemory")) || [];
+const memoryEntry = {
+        name: file.name,
+        speciality,
+        extractedText: data.text,
+        addedAt: new Date().toISOString(),
+      };
+const updatedMemory = [...existingMemory, memoryEntry];
+localStorage.setItem("iaMemory", JSON.stringify(updatedMemory));
+setIaKnowledge(updatedMemory);
 setSummary(`
-L’IA a analysé : ${file.name}
-
-Spécialité détectée : ${speciality}
-Exercices générés automatiquement :
-${generatedText}
-        `);
-      } else {
-        setSummary("Erreur analyse IA.");
-      }
+PDF ajouté avec succès.
+Nom : ${file.name}
+Spécialité : ${speciality}
+Le document est maintenant enregistré dans la mémoire IA.
+      `);
     } catch (error) {
       console.error(error);
       setSummary("Erreur IA.");
@@ -156,129 +80,70 @@ ${generatedText}
 const deletePDF = (index) => {
     const updated = files.filter((_, i) => i !== index);
 setFiles(updated);
-localStorage.setItem("pdfLibrary", JSON.stringify(updated));
-    localStorage.setItem("pdf-library", JSON.stringify(updated));
-const knowledge = updated.map((pdf) => ({
-      source: pdf.name,
-      speciality: detectSpeciality(pdf.name),
-    }));
-setIaKnowledge(knowledge);
+    localStorage.setItem("pdfLibrary", JSON.stringify(updated));
   };
 return (
     <div className="page-container">
-      <div className="main-card fade-in">
+      <div className="main-card">
         <h1 className="main-title">Bibliothèque PDF IA</h1>
 <div className="assistant-box">
           <div className="assistant-avatar">📚</div>
-<div className="assistant-message">
-            Ajoute des PDF thérapeutiques pour enrichir l’IA.
+          <div className="assistant-message">
+            Ajoute des PDF pour enrichir la mémoire thérapeutique.
           </div>
         </div>
-
 <div className="analysis-box">
-          <div className="analysis-title">Ajouter un document</div>
+          <div className="analysis-title">Ajouter un PDF</div>
 <input
             type="file"
             accept="application/pdf"
             onChange={savePDF}
             className="exercise-input"
           />
-<p style={{ marginTop: "10px", fontSize: "14px" }}>
-            Taille max : 4 MB
-          </p>
         </div>
 <div className="analysis-box">
           <div className="analysis-title">Documents enregistrés</div>
-{files.length === 0 ? (
-            <p>Aucun PDF ajouté.</p>
-          ) : (
-            files.map((file, index) => (
-              <div
-                key={index}
-                className="analysis-card"
-                style={{ marginBottom: "16px" }}
-              >
-                <div className="analysis-label">{file.type}</div>
-<div className="analysis-value">{file.name}</div>
-<div style={{ marginTop: "10px" }}>
-                  {file.size} KB
-                </div>
-<div>Ajouté : {file.date}</div>
+{files.map((file, index) => (
+            <div key={index} className="analysis-card">
+              <div>{file.name}</div>
+              <div>{file.speciality}</div>
 <button
-                  className="primary-button warning-button"
-                  style={{ marginTop: "15px" }}
-                  onClick={() => deletePDF(index)}
-                >
-                  Supprimer
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-<div className="analysis-box">
-          <div className="analysis-title">Analyse IA</div>
-<div
-            style={{
-              whiteSpace: "pre-line",
-              fontSize: "18px",
-              lineHeight: "1.8",
-            }}
-          >
-            {summary || "Ajoute un PDF pour lancer une analyse."}
-          </div>
-        </div>
-<div className="analysis-box">
-          <div className="analysis-title">Exercices générés par IA</div>
-{generatedExercises.length === 0 ? (
-            <p>Aucun exercice généré.</p>
-          ) : (
-            generatedExercises.map((exercise, index) => (
-              <div
-                key={index}
-                className="analysis-card"
-                style={{ marginBottom: "16px" }}
+                className="primary-button warning-button"
+                onClick={() => deletePDF(index)}
+                style={{ marginTop: "10px" }}
               >
-                <div className="analysis-label">
-                  {exercise.type.toUpperCase()}
-                </div>
-<div className="analysis-value">
-                  {exercise.question}
-                </div>
-              </div>
-            ))
-          )}
+                Supprimer
+              </button>
+            </div>
+          ))}
         </div>
 <div className="analysis-box">
-          <div className="analysis-title">Connaissances IA Actives</div>
-{iaKnowledge.length === 0 ? (
-            <p>Aucune connaissance IA chargée.</p>
-          ) : (
-            iaKnowledge.map((item, index) => (
-              <div
-                key={index}
-                className="analysis-card"
-                style={{ marginBottom: "14px" }}
-              >
-                <div className="analysis-label">Source utilisée</div>
-<div className="analysis-value">{item.source}</div>
-<div style={{ marginTop: "8px" }}>
-                  Domaine : {item.speciality}
-                </div>
-              </div>
-            ))
-          )}
+          <div className="analysis-title">Mémoire IA</div>
+{iaKnowledge.map((item, index) => (
+            <div key={index} className="analysis-card">
+              <div>{item.name}</div>
+              <div>{item.speciality}</div>
+            </div>
+          ))}
         </div>
-<div className="button-row" style={{ justifyContent: "center" }}>
-          <Link href="/exercices-avc">
+<div className="analysis-box">
+          <div className="analysis-title">Résumé IA</div>
+<div style={{ whiteSpace: "pre-line" }}>{summary}</div>
+        </div>
+<div className="button-row">
+          <Link href="/nouveau-patient">
             <button className="primary-button success-button">
-              Exercices AVC
+              Nouveau Patient
             </button>
           </Link>
 <Link href="/">
-            <button className="primary-button">Accueil</button>
+            <button className="primary-button blue-button">
+              Retour Accueil
+            </button>
           </Link>
         </div>
       </div>
     </div>
   );
 }
+
