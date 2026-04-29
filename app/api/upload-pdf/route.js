@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { NextResponse } from "next/server";
-
 // FIX PDFJS DOMMatrix
 global.DOMMatrix = class DOMMatrix {
   constructor() {}
