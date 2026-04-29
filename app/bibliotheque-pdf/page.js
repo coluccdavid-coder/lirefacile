@@ -9,84 +9,84 @@ export default function BibliothequePDFPage() {
   const [iaKnowledge, setIaKnowledge] = useState([]);
   const [generatedExercises, setGeneratedExercises] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
     const saved =
       JSON.parse(localStorage.getItem("pdfLibrary")) || [];
 
-    const memory =
+const memory =
       JSON.parse(localStorage.getItem("iaMemory")) || [];
 
-    const exercises =
+const exercises =
       JSON.parse(localStorage.getItem("generatedExercises")) || [];
 
-    setFiles(saved);
+setFiles(saved);
     setIaKnowledge(memory);
     setGeneratedExercises(exercises);
   }, []);
 
-  const detectSpeciality = (name) => {
+const detectSpeciality = (name) => {
     const lower = name.toLowerCase();
 
-    if (
+if (
       lower.includes("avc") ||
       lower.includes("aphasie")
     ) {
       return "Rééducation AVC";
     }
 
-    if (
+if (
       lower.includes("dys") ||
       lower.includes("lecture")
     ) {
       return "Dyslexie";
     }
 
-    if (
+if (
       lower.includes("memoire") ||
       lower.includes("mémoire")
     ) {
       return "Mémoire Cognitive";
     }
 
-    return "Orthophonie Générale";
+return "Orthophonie Générale";
   };
 
-  const buildExercisesFromText = (text, speciality) => {
+const buildExercisesFromText = (text, speciality) => {
     const exercises = [];
 
-    const sentences = text
+const sentences = text
       .replace(/\n/g, " ")
       .split(".")
-      .filter((line) => line.trim().length > 30)
-      .slice(0, 15);
+      .filter((line) => line.trim().length > 25)
+      .slice(0, 25);
 
-    sentences.forEach((sentence) => {
+sentences.forEach((sentence) => {
       const cleanSentence = sentence.trim();
 
-      if (speciality.includes("AVC")) {
+if (speciality.includes("AVC")) {
         exercises.push({
           type: "langage",
           question: `Répète : ${cleanSentence.substring(0, 90)}`,
         });
 
-        exercises.push({
+exercises.push({
           type: "mémoire",
-          question: `Retiens : ${cleanSentence.substring(0, 70)}`,
+          question: `Retiens cette phrase : ${cleanSentence.substring(0, 70)}`,
         });
 
-        exercises.push({
+exercises.push({
           type: "compréhension",
           question: `Explique cette phrase : ${cleanSentence.substring(0, 80)}`,
         });
       }
 
-      if (speciality.includes("Dys")) {
+if (speciality.includes("Dys")) {
         exercises.push({
           type: "lecture",
           question: `Lis : ${cleanSentence.substring(0, 80)}`,
         });
 
-        exercises.push({
+exercises.push({
           type: "orthographe",
           question: `Recopie : ${cleanSentence
             .split(" ")
@@ -94,13 +94,13 @@ export default function BibliothequePDFPage() {
             .join(" ")}`,
         });
 
-        exercises.push({
+exercises.push({
           type: "compréhension",
           question: `Que comprends-tu de : ${cleanSentence.substring(0, 60)} ?`,
         });
       }
 
-      if (speciality.includes("Mémoire")) {
+if (speciality.includes("Mémoire")) {
         exercises.push({
           type: "mémoire",
           question: `Mémorise : ${cleanSentence.substring(0, 70)}`,
@@ -108,10 +108,10 @@ export default function BibliothequePDFPage() {
       }
     });
 
-    return exercises;
+return exercises;
   };
 
-  const fetchInternetKnowledge = async (speciality) => {
+const fetchInternetKnowledge = async (speciality) => {
     try {
       const response = await fetch("/api/web-knowledge", {
         method: "POST",
@@ -121,55 +121,66 @@ export default function BibliothequePDFPage() {
         body: JSON.stringify({ speciality }),
       });
 
-      const data = await response.json();
+const data = await response.json();
 
-      if (data.success) {
+if (data.success) {
         return data.exercises.map((item) => ({
           type: "internet",
           question: item,
         }));
       }
 
-      return [];
+return [];
     } catch (error) {
       console.error(error);
       return [];
     }
   };
 
-  const savePDF = async (event) => {
+const savePDF = async (event) => {
     const file = event.target.files?.[0];
 
-    if (!file) return;
+if (!file) return;
 
-    const maxSize = 4 * 1024 * 1024;
+const maxSize = 4 * 1024 * 1024;
 
-    if (file.size > maxSize) {
+if (file.size > maxSize) {
       alert("PDF trop volumineux (max 4 MB)");
       return;
     }
 
-    try {
+try {
       setSummary("Analyse IA en cours...");
 
-      const formData = new FormData();
+const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/upload-pdf", {
+const response = await fetch("/api/upload-pdf", {
         method: "POST",
         body: formData,
       });
 
-      const data = await response.json();
+const data = await response.json();
 
-      if (!data.success) {
-        setSummary("Erreur lecture PDF");
-        return;
+if (!data.success) {
+        console.log("ERREUR PDF:", data);
+
+setSummary(`
+Erreur lecture PDF
+
+Message :
+${data.error || "Erreur inconnue"}
+
+Nom du PDF : ${file.name}
+Taille : ${Math.round(file.size / 1024)} KB
+        `);
+
+return;
       }
 
-      const speciality = detectSpeciality(file.name);
+const speciality = detectSpeciality(file.name);
 
-      const newPDF = {
+const newPDF = {
         id: Date.now(),
         name: file.name,
         size: Math.round(file.size / 1024),
@@ -177,19 +188,19 @@ export default function BibliothequePDFPage() {
         speciality,
       };
 
-      const updatedFiles = [...files, newPDF];
+const updatedFiles = [...files, newPDF];
 
-      setFiles(updatedFiles);
+setFiles(updatedFiles);
 
-      localStorage.setItem(
+localStorage.setItem(
         "pdfLibrary",
         JSON.stringify(updatedFiles)
       );
 
-      const existingMemory =
+const existingMemory =
         JSON.parse(localStorage.getItem("iaMemory")) || [];
 
-      const memoryEntry = {
+const memoryEntry = {
         id: Date.now(),
         name: file.name,
         speciality,
@@ -197,38 +208,38 @@ export default function BibliothequePDFPage() {
         addedAt: new Date().toISOString(),
       };
 
-      const updatedMemory = [
+const updatedMemory = [
         ...existingMemory,
         memoryEntry,
       ];
 
-      localStorage.setItem(
+localStorage.setItem(
         "iaMemory",
         JSON.stringify(updatedMemory)
       );
 
-      setIaKnowledge(updatedMemory);
+setIaKnowledge(updatedMemory);
 
-      const aiExercises = buildExercisesFromText(
+const aiExercises = buildExercisesFromText(
         data.text,
         speciality
       );
 
-      const internetExercises =
+const internetExercises =
         await fetchInternetKnowledge(speciality);
 
-      const existingExercises =
+const existingExercises =
         JSON.parse(
           localStorage.getItem("generatedExercises")
         ) || [];
 
-      const mergedExercises = [
+const mergedExercises = [
         ...existingExercises,
         ...aiExercises,
         ...internetExercises,
       ];
 
-      const uniqueExercises = mergedExercises.filter(
+const uniqueExercises = mergedExercises.filter(
         (exercise, index, self) =>
           index ===
           self.findIndex(
@@ -236,19 +247,19 @@ export default function BibliothequePDFPage() {
           )
       );
 
-      setGeneratedExercises(uniqueExercises);
+setGeneratedExercises(uniqueExercises);
 
-      localStorage.setItem(
+localStorage.setItem(
         "generatedExercises",
         JSON.stringify(uniqueExercises)
       );
 
-      localStorage.setItem(
+localStorage.setItem(
         "currentExercisePack",
         JSON.stringify(uniqueExercises)
       );
 
-      setSummary(`
+setSummary(`
 PDF analysé avec succès.
 
 Nom : ${file.name}
@@ -269,44 +280,49 @@ ${uniqueExercises.length}
       `);
     } catch (error) {
       console.error(error);
-      setSummary("Erreur IA.");
+
+setSummary(`
+Erreur IA.
+
+${error?.message || "Erreur inconnue"}
+      `);
     }
   };
 
-  const deletePDF = (index) => {
+const deletePDF = (index) => {
     const updatedFiles = files.filter(
       (_, i) => i !== index
     );
 
-    setFiles(updatedFiles);
+setFiles(updatedFiles);
 
-    localStorage.setItem(
+localStorage.setItem(
       "pdfLibrary",
       JSON.stringify(updatedFiles)
     );
   };
 
-  return (
+return (
     <div className="page-container">
       <div className="main-card">
         <h1 className="main-title">
           Bibliothèque PDF IA
         </h1>
 
-        <div className="assistant-box">
+<div className="assistant-box">
           <div className="assistant-avatar">📚</div>
 
-          <div className="assistant-message">
+<div className="assistant-message">
             Ajoute des PDF pour enrichir la mémoire thérapeutique.
           </div>
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Ajouter un PDF
           </div>
 
-          <input
+<input
             type="file"
             accept="application/pdf"
             onChange={savePDF}
@@ -314,12 +330,12 @@ ${uniqueExercises.length}
           />
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Documents enregistrés
           </div>
 
-          {files.length === 0 ? (
+{files.length === 0 ? (
             <p>Aucun PDF enregistré.</p>
           ) : (
             files.map((file, index) => (
@@ -333,7 +349,7 @@ ${uniqueExercises.length}
                 <div>{file.size} KB</div>
                 <div>{file.date}</div>
 
-                <button
+<button
                   className="primary-button warning-button"
                   onClick={() => deletePDF(index)}
                   style={{ marginTop: "10px" }}
@@ -345,12 +361,12 @@ ${uniqueExercises.length}
           )}
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Mémoire IA
           </div>
 
-          {iaKnowledge.length === 0 ? (
+{iaKnowledge.length === 0 ? (
             <p>Aucune mémoire IA.</p>
           ) : (
             iaKnowledge.map((item, index) => (
@@ -366,12 +382,12 @@ ${uniqueExercises.length}
           )}
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Exercices générés
           </div>
 
-          {generatedExercises.length === 0 ? (
+{generatedExercises.length === 0 ? (
             <p>Aucun exercice généré.</p>
           ) : (
             generatedExercises
@@ -389,30 +405,30 @@ ${uniqueExercises.length}
           )}
         </div>
 
-        <div className="analysis-box">
+<div className="analysis-box">
           <div className="analysis-title">
             Résumé IA
           </div>
 
-          <div style={{ whiteSpace: "pre-line" }}>
+<div style={{ whiteSpace: "pre-line" }}>
             {summary}
           </div>
         </div>
 
-        <div className="button-row">
+<div className="button-row">
           <Link href="/nouveau-patient">
             <button className="primary-button success-button">
               Nouveau Patient
             </button>
           </Link>
 
-          <Link href="/exercices-avc">
+<Link href="/exercices-avc">
             <button className="primary-button blue-button">
               Exercices AVC
             </button>
           </Link>
 
-          <Link href="/">
+<Link href="/">
             <button className="primary-button warning-button">
               Retour Accueil
             </button>
@@ -422,3 +438,4 @@ ${uniqueExercises.length}
     </div>
   );
 }
+
