@@ -54,7 +54,14 @@ export async function POST(req) {
       "pdfjs-dist/legacy/build/pdf.mjs"
     );
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = undefined;
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    
+    const loadingTask = pdfjsLib.getDocument({
+  data: uint8Array,
+  disableWorker: true,
+  useSystemFonts: true,
+  isEvalSupported: false,
+});
 
     // ==========================
     // LECTURE PDF
