@@ -1,29 +1,23 @@
 import { NextResponse } from "next/server";
-
 export async function POST(req) {
   try {
     const body = await req.json();
     const symptoms = body.symptoms || [];
-
 const exercises = [];
-
 symptoms.forEach((symptom) => {
       const lower = symptom.toLowerCase();
-
 if (lower.includes("aphasie")) {
         exercises.push({
           type: "langage",
           question: "Répète : Bonjour, comment allez-vous ?",
         });
       }
-
 if (lower.includes("memoire")) {
         exercises.push({
           type: "memoire",
           question: "Retenir : pomme, soleil, chaise",
         });
       }
-
 if (lower.includes("lecture")) {
         exercises.push({
           type: "lecture",
@@ -31,7 +25,6 @@ if (lower.includes("lecture")) {
         });
       }
     });
-
 return NextResponse.json({
       success: true,
       exercises,
@@ -43,4 +36,3 @@ return NextResponse.json({
     });
   }
 }
-
