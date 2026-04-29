@@ -56,14 +56,7 @@ export async function POST(req) {
 
     const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
     
-    const loadingTask = pdfjsLib.getDocument({
-  data: uint8Array,
-  disableWorker: true,
-  useSystemFonts: true,
-  isEvalSupported: false,
-});
-
-    // ==========================
+     // ==========================
     // LECTURE PDF
     // ==========================
 
