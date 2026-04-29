@@ -61,10 +61,11 @@ export async function POST(req) {
     );
 
     // ==========================
-    // FIX WORKER VERCEL
+    // FIX WORKER NEXT / VERCEL
     // ==========================
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
     // ==========================
     // LECTURE PDF
@@ -73,9 +74,12 @@ export async function POST(req) {
     const loadingTask = pdfjsLib.getDocument({
       data: uint8Array,
 
+      disableWorker: true,
       useWorkerFetch: false,
+
       disableFontFace: true,
       isEvalSupported: false,
+      useSystemFonts: true,
 
       standardFontDataUrl: null,
       cMapUrl: null,
@@ -100,6 +104,7 @@ export async function POST(req) {
           if ("str" in item) {
             return item.str;
           }
+
           return "";
         })
         .join(" ");
@@ -144,7 +149,8 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: false,
-      error: error?.message || "Erreur extraction PDF",
+      error:
+        error?.message || "Erreur extraction PDF",
     });
   }
 }
