@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
 
 export async function POST(req) {
   try {
     console.log("UPLOAD PDF START");
 
-    // ==========================
-    // FORM DATA
-    // ==========================
-
     const formData = await req.formData();
-
     const file = formData.get("file");
 
     if (!file) {
@@ -23,72 +17,42 @@ export async function POST(req) {
       });
     }
 
-    console.log("Nom PDF:", file.name);
-    console.log("Taille:", file.size);
-
-    // ==========================
-    // LIMITE TAILLE
-    // ==========================
-
-    const maxSize = 4 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-      return NextResponse.json({
-        success: false,
-        error: "PDF trop volumineux (4 MB max)",
-      });
-    }
-
-    // ==========================
-    // BUFFER
-    // ==========================
-
     const arrayBuffer = await file.arrayBuffer();
-
     const buffer = Buffer.from(arrayBuffer);
 
-    // ==========================
+    // =========================
     // EXTRACTION TEXTE PDF
-    // ==========================
+    // =========================
 
-    const data = await pdfParse(buffer);
+    const data = await pdf(buffer);
 
-    const text = data.text
-      ?.replace(/\s+/g, " ")
-      ?.trim();
-
-    console.log("Texte extrait:", text?.length);
-
-    // ==========================
-    // VERIFICATION TEXTE
-    // ==========================
+    const text = data.text?.trim();
 
     if (!text || text.length < 20) {
       return NextResponse.json({
         success: false,
-        error: "Aucun texte détecté dans le PDF",
+        error: "Impossible de lire le PDF",
       });
     }
 
-    // ==========================
-    // SUCCES
-    // ==========================
+    // =========================
+    // SAUVEGARDE MÉMOIRE IA
+    // =========================
 
     return NextResponse.json({
       success: true,
       text,
-      pages: data.numpages || 0,
+      pages: data.numpages,
       length: text.length,
+      info: data.info || {},
     });
 
   } catch (error) {
-    console.error("PDF ERROR:", error);
+    console.error("ERREUR PDF :", error);
 
     return NextResponse.json({
       success: false,
-      error:
-        error?.message ||
-        "Erreur extraction PDF",
+      error: error.message,
     });
   }
 }
