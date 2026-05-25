@@ -49,54 +49,142 @@ return "Orthophonie Générale";
   // CREATE EXERCISES FROM TEXT
   // ==========================
 const buildExercisesFromText = (text, speciality) => {
-    const exercises = [];
-const sentences = text
-      .replace(/\n/g, " ")
-      .split(".")
-      .filter((line) => line.trim().length > 25)
-      .slice(0, 25);
-sentences.forEach((sentence) => {
-      const cleanSentence = sentence.trim();
-if (speciality.includes("AVC")) {
-        exercises.push({
-          type: "langage",
-          question: `Répète : ${cleanSentence.substring(0, 90)}`,
-        });
-exercises.push({
-          type: "mémoire",
-          question: `Retiens cette phrase : ${cleanSentence.substring(0, 70)}`,
-        });
-exercises.push({
-          type: "compréhension",
-          question: `Explique cette phrase : ${cleanSentence.substring(0, 80)}`,
-        });
-      }
-if (speciality.includes("Dys")) {
-        exercises.push({
-          type: "lecture",
-          question: `Lis : ${cleanSentence.substring(0, 80)}`,
-        });
-exercises.push({
-          type: "orthographe",
-          question: `Recopie : ${cleanSentence
+
+  // =========================
+  // SECURITE TEXTE
+  // =========================
+  const safeText =
+    typeof text === "string"
+      ? text
+      : "";
+
+  // =========================
+  // TABLEAU EXERCICES
+  // =========================
+  const exercises = [];
+
+  // =========================
+  // PREPARATION PHRASES
+  // =========================
+  const sentences = safeText
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ")
+    .split(".")
+    .filter((line) => line.trim().length > 25)
+    .slice(0, 25);
+
+  // =========================
+  // SI VIDE
+  // =========================
+  if (sentences.length === 0) {
+
+    exercises.push({
+      type: "information",
+      question:
+        "Aucun texte exploitable trouvé dans le PDF."
+    });
+
+    return exercises;
+  }
+
+  // =========================
+  // GENERATION EXERCICES
+  // =========================
+  sentences.forEach((sentence) => {
+
+    const cleanSentence =
+      typeof sentence === "string"
+        ? sentence.trim()
+        : "";
+
+    if (!cleanSentence) return;
+
+    // =====================
+    // AVC
+    // =====================
+    if (speciality.includes("AVC")) {
+
+      exercises.push({
+        type: "langage",
+        question:
+          `Répète : ${cleanSentence.substring(0, 90)}`
+      });
+
+      exercises.push({
+        type: "mémoire",
+        question:
+          `Retiens cette phrase : ${cleanSentence.substring(0, 70)}`
+      });
+
+      exercises.push({
+        type: "compréhension",
+        question:
+          `Explique cette phrase : ${cleanSentence.substring(0, 80)}`
+      });
+
+    }
+
+    // =====================
+    // DYS
+    // =====================
+    else if (speciality.includes("Dys")) {
+
+      exercises.push({
+        type: "lecture",
+        question:
+          `Lis : ${cleanSentence.substring(0, 80)}`
+      });
+
+      exercises.push({
+        type: "orthographe",
+        question:
+          `Recopie : ${cleanSentence
             .split(" ")
             .slice(0, 6)
-            .join(" ")}`,
-        });
-exercises.push({
-          type: "compréhension",
-          question: `Que comprends-tu de : ${cleanSentence.substring(0, 60)} ?`,
-        });
-      }
-if (speciality.includes("Mémoire")) {
-        exercises.push({
-          type: "mémoire",
-          question: `Mémorise : ${cleanSentence.substring(0, 70)}`,
-        });
-      }
-    });
-return exercises;
-  };
+            .join(" ")}`
+      });
+
+      exercises.push({
+        type: "compréhension",
+        question:
+          `Que comprends-tu de : ${cleanSentence.substring(0, 60)} ?`
+      });
+
+    }
+
+    // =====================
+    // MEMOIRE
+    // =====================
+    else if (speciality.includes("Mémoire")) {
+
+      exercises.push({
+        type: "mémoire",
+        question:
+          `Mémorise : ${cleanSentence.substring(0, 70)}`
+      });
+
+    }
+
+    // =====================
+    // GENERAL
+    // =====================
+    else {
+
+      exercises.push({
+        type: "général",
+        question:
+          cleanSentence.substring(0, 100)
+      });
+
+    }
+
+  });
+
+  // =========================
+  // LIMITE
+  // =========================
+  return exercises.slice(0, 15);
+};
 // ==========================
   // FETCH INTERNET KNOWLEDGE
   // ==========================
