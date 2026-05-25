@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
-
-const pdfParse = require("pdf-parse");
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
-    console.log("=================================");
-    console.log("UPLOAD PDF START");
-    console.log("=================================");
+
+    console.log("========== START PDF ==========");
 
     // =========================
-    // RÉCUPÉRATION FORM DATA
+    // FORM DATA
     // =========================
     const formData = await req.formData();
 
@@ -24,54 +22,54 @@ export async function POST(req) {
       });
     }
 
-    console.log("Fichier reçu :", file.name);
+    console.log("Nom :", file.name);
     console.log("Taille :", file.size);
 
     // =========================
-    // CONVERSION BUFFER
+    // BUFFER
     // =========================
     const bytes = await file.arrayBuffer();
 
     const buffer = Buffer.from(bytes);
 
-    console.log("Buffer créé");
-
-    // =========================
-    // DEBUG PDF-PARSE
-    // =========================
-    console.log("TYPE PDFPARSE :", typeof pdfParse);
-    console.log("PDFPARSE :", pdfParse);
+    console.log("Buffer OK");
 
     // =========================
     // LECTURE PDF
     // =========================
-    const data = await pdfParse(buffer);
+    const data = await pdf(buffer);
 
-    console.log("PDF lu avec succès");
+    console.log("PDF lu !");
     console.log("Pages :", data.numpages);
 
     // =========================
-    // RÉPONSE OK
+    // TEXTE
+    // =========================
+    const texte = data.text || "";
+
+    console.log("Longueur texte :", texte.length);
+
+    // =========================
+    // REPONSE
     // =========================
     return NextResponse.json({
       success: true,
-      fileName: file.name,
-      size: file.size,
+      nom: file.name,
+      taille: file.size,
       pages: data.numpages,
-      text: data.text,
-      info: data.info || {},
+      texte: texte,
     });
 
   } catch (error) {
-    console.error("=================================");
-    console.error("ERREUR PDF");
-    console.error("=================================");
+
+    console.error("========== ERREUR PDF ==========");
     console.error(error);
 
     return NextResponse.json({
       success: false,
-      error: error?.message || "Erreur inconnue",
-      stack: error?.stack || "",
+      error: "Erreur lecture PDF",
+      message: error.message,
+      stack: error.stack,
     });
   }
 }
