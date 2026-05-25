@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse";
+
+const pdfParse = require("pdf-parse");
 
 export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
+    console.log("UPLOAD PDF START");
+
+    // =========================
+    // FORM DATA
+    // =========================
     const formData = await req.formData();
+
     const file = formData.get("file");
 
     if (!file) {
@@ -15,24 +22,43 @@ export async function POST(req) {
       });
     }
 
+    console.log("Fichier reçu :", file.name);
+
+    // =========================
+    // CONVERSION BUFFER
+    // =========================
     const bytes = await file.arrayBuffer();
+
     const buffer = Buffer.from(bytes);
 
-    // IMPORTANT
+    console.log("Buffer créé");
+
+    // =========================
+    // LECTURE PDF
+    // =========================
     const data = await pdfParse(buffer);
 
+    console.log("PDF lu avec succès");
+
+    // =========================
+    // RÉPONSE
+    // =========================
     return NextResponse.json({
       success: true,
-      text: data.text,
+      fileName: file.name,
+      size: file.size,
       pages: data.numpages,
+      text: data.text,
+      info: data.info || {},
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("ERREUR PDF :", error);
 
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: "Erreur lecture PDF",
+      message: error.message,
     });
   }
 }
