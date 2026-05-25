@@ -23,10 +23,11 @@ export async function POST(req) {
       });
     }
 
-    console.log("PDF :", file.name);
+    console.log("Nom PDF:", file.name);
+    console.log("Taille:", file.size);
 
     // ==========================
-    // LIMITATION TAILLE
+    // LIMITE TAILLE
     // ==========================
 
     const maxSize = 4 * 1024 * 1024;
@@ -34,12 +35,12 @@ export async function POST(req) {
     if (file.size > maxSize) {
       return NextResponse.json({
         success: false,
-        error: "PDF trop volumineux (4MB max)",
+        error: "PDF trop volumineux (4 MB max)",
       });
     }
 
     // ==========================
-    // BUFFER PDF
+    // BUFFER
     // ==========================
 
     const arrayBuffer = await file.arrayBuffer();
@@ -47,56 +48,39 @@ export async function POST(req) {
     const buffer = Buffer.from(arrayBuffer);
 
     // ==========================
-    // EXTRACTION TEXTE
+    // EXTRACTION TEXTE PDF
     // ==========================
 
     const data = await pdfParse(buffer);
 
-    let extractedText = data.text || "";
+    const text = data.text
+      ?.replace(/\s+/g, " ")
+      ?.trim();
+
+    console.log("Texte extrait:", text?.length);
 
     // ==========================
-    // CLEAN TEXTE
+    // VERIFICATION TEXTE
     // ==========================
 
-    extractedText = extractedText
-      .replace(/\s+/g, " ")
-      .trim();
-
-    console.log(
-      "Texte extrait :",
-      extractedText.length
-    );
-
-    // ==========================
-    // PDF VIDE
-    // ==========================
-
-    if (
-      !extractedText ||
-      extractedText.length < 20
-    ) {
+    if (!text || text.length < 20) {
       return NextResponse.json({
         success: false,
-        error: "Aucun texte détecté",
+        error: "Aucun texte détecté dans le PDF",
       });
     }
 
     // ==========================
-    // LIMITATION TEXTE
-    // ==========================
-
-    extractedText = extractedText.slice(0, 30000);
-
-    // ==========================
-    // SUCCESS
+    // SUCCES
     // ==========================
 
     return NextResponse.json({
       success: true,
-      text: extractedText,
+      text,
       pages: data.numpages || 0,
-      length: extractedText.length,
+      length: text.length,
     });
+
   } catch (error) {
     console.error("PDF ERROR:", error);
 
@@ -104,7 +88,7 @@ export async function POST(req) {
       success: false,
       error:
         error?.message ||
-        "Erreur lecture PDF",
+        "Erreur extraction PDF",
     });
   }
 }
