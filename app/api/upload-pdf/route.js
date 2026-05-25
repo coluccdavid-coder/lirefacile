@@ -6,10 +6,12 @@ export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
+    console.log("=================================");
     console.log("UPLOAD PDF START");
+    console.log("=================================");
 
     // =========================
-    // FORM DATA
+    // RÉCUPÉRATION FORM DATA
     // =========================
     const formData = await req.formData();
 
@@ -23,6 +25,7 @@ export async function POST(req) {
     }
 
     console.log("Fichier reçu :", file.name);
+    console.log("Taille :", file.size);
 
     // =========================
     // CONVERSION BUFFER
@@ -34,14 +37,21 @@ export async function POST(req) {
     console.log("Buffer créé");
 
     // =========================
+    // DEBUG PDF-PARSE
+    // =========================
+    console.log("TYPE PDFPARSE :", typeof pdfParse);
+    console.log("PDFPARSE :", pdfParse);
+
+    // =========================
     // LECTURE PDF
     // =========================
     const data = await pdfParse(buffer);
 
     console.log("PDF lu avec succès");
+    console.log("Pages :", data.numpages);
 
     // =========================
-    // RÉPONSE
+    // RÉPONSE OK
     // =========================
     return NextResponse.json({
       success: true,
@@ -53,12 +63,15 @@ export async function POST(req) {
     });
 
   } catch (error) {
-    console.error("ERREUR PDF :", error);
+    console.error("=================================");
+    console.error("ERREUR PDF");
+    console.error("=================================");
+    console.error(error);
 
     return NextResponse.json({
       success: false,
-      error: "Erreur lecture PDF",
-      message: error.message,
+      error: error?.message || "Erreur inconnue",
+      stack: error?.stack || "",
     });
   }
 }
